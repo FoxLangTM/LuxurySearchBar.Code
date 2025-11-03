@@ -348,15 +348,30 @@ document.addEventListener("touchend", cancelCloseHold);
 
 
 
-const panelDots = document.querySelectorAll('.settings-panel .dot');
+const panel = document.querySelector('.settings-panel');
+const dots = panel.querySelectorAll('.dot');
+const layers = panel.querySelectorAll('.layer');
 
-panelDots.forEach(dot => {
+dots.forEach(dot => {
   dot.addEventListener('click', () => {
-    panelDots.forEach(d => d.classList.remove('active'));
+    // dezaktywacja wszystkich dotów
+    dots.forEach(d => d.classList.remove('active'));
+    // dezaktywacja wszystkich warstw
+    layers.forEach(l => l.classList.remove('active'));
+
+    // aktywacja klikniętej dot i warstwy
     dot.classList.add('active');
-    dot.textContent = dot.dataset.letter;
+    const layerName = dot.dataset.layer;
+    const layer = panel.querySelector(`.${layerName}`);
+    if (layer) {
+      layer.style.transition = 'opacity 0.3s ease';
+      layer.classList.add('active');
+    }
   });
 });
+
+
+
 
 // ======= Assistant (full) =======
 function createAssistantPanel(){

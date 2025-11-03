@@ -24,7 +24,7 @@ body, * {
 .search-button:active { transform: scale(.9); }
 
 /* --- Overlay --- */
-.overlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:30; }
+.overlay { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:40; }
 .overlay.show { display:flex; }
 
 .search-menu {
@@ -178,6 +178,7 @@ body, * {
   background: #00aaff;
   cursor: pointer;
   transition: background 0.3s;
+  z-index: 39;
 }
 .settings-close-line:active {
   background: #0077ff;
@@ -202,15 +203,63 @@ body, * {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s ease; /* tło, rozmiar i font-size */
+  z-index: 32;
+}
+
+.settings-panel .dot img {
+  width: 15px;
+  height: 15px;
+  display: block;
+  margin: auto;
+  pointer-events: none;
+  transition: transform 0.3s ease; /* skalowanie obrazka */
 }
 
 .settings-panel .dot.active {
   width: 30px;
   height: 30px;
   font-size: 18px;
-  background: #11aaff;
+  background: #11aaff; /* zmiana koloru tła */
 }
+
+.settings-panel .dot.active img {
+  transform: scale(1.2); /* powiększenie obrazka */
+}
+
+
+
+.layer.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
+#variations-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  margin-top: 50px;
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 31;
+
+  /* dodane */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* wyśrodkowanie poziome */
+  justify-content: flex-start; /* od góry */
+  padding-top: 120px; /* odległość od góry panelu */
+}
+
+
 
 /* --- Results page --- */
 .results-root {
@@ -433,7 +482,7 @@ background: #0090ff;
   width: 45px;
   height: 45px;
   cursor: pointer;
-  z-index: 30;
+  z-index: 35;
   display: flex;
   align-items: center;
   justify-content: center;

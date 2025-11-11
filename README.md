@@ -1,9 +1,13 @@
 # LuxurySearchBar.Code
 
 
-<p align="center">
-  <img src="https://logowik.com/content/uploads/images/netlify-icon5435.logowik.com.webp" alt="Netlify Logo" width="200" border-radius="20px"/>
-</p>
+<img 
+  src="https://logowik.com/content/uploads/images/netlify-icon5435.logowik.com.webp" 
+  alt="Netlify Logo" 
+  width="100" 
+  align="left" 
+  style="border-radius: 20px; margin-right: 10px;"
+/>
 
 https://foxcorp.netlify.app/
 

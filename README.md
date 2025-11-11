@@ -11,7 +11,7 @@
 
 https://foxcorp.netlify.app/
 
-© FoxCorp ?.07.2025 All Right Reserved
+© FoxCorp 11.07.2025 All Right Reserved
 
 <br>
 <br>W razie pomocy, proszę zgłaszać wiadomości pod ten adres:

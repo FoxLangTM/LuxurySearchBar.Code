@@ -13,8 +13,8 @@ https://foxcorp.netlify.app/
 
 © FoxCorp ?.07.2025 All Right Reserved
 
-|
-|
+<br>
+<br>
 |
 |
 |

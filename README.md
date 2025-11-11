@@ -2,7 +2,7 @@
 
 
 <p align="center">
-  <img src="https://logowik.com/content/uploads/images/netlify-icon5435.logowik.com.webp" alt="Netlify Logo" width="200"/>
+  <img src="https://logowik.com/content/uploads/images/netlify-icon5435.logowik.com.webp" alt="Netlify Logo" width="200" border-radius="20px"/>
 </p>
 
 https://foxcorp.netlify.app/

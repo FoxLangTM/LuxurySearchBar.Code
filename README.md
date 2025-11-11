@@ -2,7 +2,7 @@
 
 
 <img 
-  src="https://pixabay.com/photos/foxlang-foxcorp-foxlang-9951183/" 
+  src="https://cdn.pixabay.com/photo/2025/11/11/19/12/19-12-58-323_1280.png" 
   alt="Netlify Logo" 
   width="100" 
   align="left" 

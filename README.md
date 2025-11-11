@@ -1,7 +1,7 @@
 # LuxurySearchBar.Code
 
 
-https://www.bing.com/images/search?view=detailV2&ccid=BqEcDucN&id=B44D7FCACFBACA0306BBE679D15C692D77BD8056&thid=OIP.BqEcDucNAKv5PVYpUZA29gHaFj&mediaurl=https%3a%2f%2flogowik.com%2fcontent%2fuploads%2fimages%2fnetlify-icon5435.logowik.com.webp&cdnurl=https%3a%2f%2fth.bing.com%2fth%2fid%2fR.06a11c0ee70d00abf93d5629519036f6%3frik%3dVoC9dy1pXNF55g%26pid%3dImgRaw%26r%3d0&exph=650&expw=866&q=netlify&FORM=IRPRST&ck=BD6323D5078435916D7A6B2194419D43&selectedIndex=91&itb=0
+[https://www.bing.com/images/search?view=detailV2&ccid=BqEcDucN&id=B44D7FCACFBACA0306BBE679D15C692D77BD8056&thid=OIP.BqEcDucNAKv5PVYpUZA29gHaFj&mediaurl=https%3a%2f%2flogowik.com%2fcontent%2fuploads%2fimages%2fnetlify-icon5435.logowik.com.webp&cdnurl=https%3a%2f%2fth.bing.com%2fth%2fid%2fR.06a11c0ee70d00abf93d5629519036f6%3frik%3dVoC9dy1pXNF55g%26pid%3dImgRaw%26r%3d0&exph=650&expw=866&q=netlify&FORM=IRPRST&ck=BD6323D5078435916D7A6B2194419D43&selectedIndex=91&itb=0]()
 https://foxcorp.netlify.app/
 
 © FoxCorp ?.07.2025 All Right Reserved

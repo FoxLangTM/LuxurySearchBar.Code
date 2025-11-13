@@ -680,3 +680,27 @@ from -90deg,
 ) content-box;
 }
 }
+
+
+.max-power {
+  transform: scale(1) !important; /* Max moc, pełna res */
+  filter: none !important;
+  background: linear-gradient(145deg, #a9a9a9, #00aaff) !important; /* Metaliczno-neonowy gradient z srebrnym halo */
+  box-shadow: 0 0 20px rgba(0,170,255,0.6) !important; /* Dostojny blask, jasny neon */
+}
+
+.balanced {
+  transform: scale(0.95) !important;
+  filter: grayscale(0.1) !important;
+  background: linear-gradient(145deg, #ffd700, #a9a9a9) !important; /* Złoto-metaliczny z ciemniejszym halo */
+  box-shadow: 0 0 15px rgba(169,169,169,0.4) !important; /* Średni blask */
+}
+
+.optimized {
+  transform: scale(0.8) !important; /* Oszczędna symulacja niskiej res */
+  filter: grayscale(0.5) blur(1px) !important;
+  transition: none !important;
+  animation: none !important; /* Blokada animacji dla całego kodu/body */
+  background: linear-gradient(145deg, #2BE501, #33ff66) !important; /* Zielony neon z mrocznym halo */
+  box-shadow: 0 0 10px rgba(0,100,0,0.8) !important; /* Ciemniejszy zielony dla oszczędności */
+}

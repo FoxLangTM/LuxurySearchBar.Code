@@ -2,7 +2,7 @@
 
 
 <img 
-  src="Images/FoxCorp.webp" 
+  src="/Images/FoxCorp.webp" 
   alt="Logo" 
   width="100" 
   align="left" 

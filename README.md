@@ -2,8 +2,8 @@
 
 
 <img 
-  src="images/FoxCorp.webp" 
-  alt="Netlify Logo" 
+  src="Images/FoxCorp.webp" 
+  alt="Logo" 
   width="100" 
   align="left" 
   style="border-radius: 20px; margin-right: 10px;"

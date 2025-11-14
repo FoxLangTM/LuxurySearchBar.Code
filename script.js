@@ -560,7 +560,7 @@ function createPerfControl(dotId) {
     document.addEventListener("touchend", stopDrag);
   }
 
-   function onDrag(e) {
+    function onDrag(e) {
     if (e.touches) e.preventDefault();
     e.stopPropagation();
     const rect = line.getBoundingClientRect();
@@ -800,7 +800,67 @@ function initWebGLNeonBackground() {
 
 const perfRange = document.getElementById('perfRange3');
 
-// Funkcja snapująca wartość (wyodrębniona dla czystości)
+// Wrapper dla IndexedDB (z fallback na sessionStorage)
+const DB_NAME = 'FoxCorpDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'perfStore';
+const KEY = 'perfValue';
+
+async function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+  });
+}
+
+async function getValue() {
+  try {
+    const db = await openDB();
+    return new Promise((resolve) => {
+      const transaction = db.transaction(STORE_NAME, 'readonly');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.get(KEY);
+      request.onsuccess = () => resolve(request.result || '0');
+      request.onerror = () => resolve('0');
+    });
+  } catch {
+    console.warn('Błąd IndexedDB, fallback na sessionStorage');
+    return sessionStorage.getItem(KEY) || '0';
+  }
+}
+
+async function setValue(value) {
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.put(value, KEY);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+      transaction.oncomplete = () => {
+        // Opcjonalnie: Żądaj persistent storage
+        if (navigator.storage && navigator.storage.persist) {
+          navigator.storage.persist().then(granted => {
+            if (granted) console.log('Persistent storage granted');
+          });
+        }
+      };
+    });
+  } catch (err) {
+    console.warn('Nie udało się zapisać w IndexedDB:', err);
+    sessionStorage.setItem(KEY, value); // Backup
+  }
+}
+
+// Funkcja snapująca wartość (bez zmian)
 function snapValue(value) {
   let snapped = parseInt(value);
   if (snapped < 25) snapped = 0;
@@ -809,41 +869,27 @@ function snapValue(value) {
   return snapped;
 }
 
-// Na load, odczytaj z localStorage (z fallbackiem na sessionStorage)
-let savedValue;
-try {
-  savedValue = localStorage.getItem('perfValue') || sessionStorage.getItem('perfValue') || '0';
-} catch (err) {
-  console.warn('Błąd localStorage:', err); // Szczery log dla debugu
-  savedValue = '0'; // Fallback na default
-}
-perfRange.value = savedValue;
-applyOptimizations(snapValue(savedValue)); // Snap na starcie dla spójności
+// Na load: Odczytaj z IndexedDB
+(async () => {
+  let savedValue = await getValue();
+  perfRange.value = savedValue;
+  applyOptimizations(snapValue(savedValue));
+})();
 
-// Na input: zapis dynamiczny ze snapem (unikamy śmieciowych wartości)
-perfRange?.addEventListener('input', (e) => {
+// Na input: Zapis dynamiczny ze snapem
+perfRange?.addEventListener('input', async (e) => {
   const snapped = snapValue(e.target.value);
-  try {
-    localStorage.setItem('perfValue', snapped);
-    sessionStorage.setItem('perfValue', snapped); // Backup
-  } catch (err) {
-    console.warn('Nie udało się zapisać w storage:', err);
-  }
+  await setValue(snapped);
 });
 
-// Na change: finalny snap i apply (jak miałeś)
-perfRange?.addEventListener('change', (e) => {
+// Na change: Finalny snap i apply
+perfRange?.addEventListener('change', async (e) => {
   const snapped = snapValue(e.target.value);
   e.target.value = snapped;
-  try {
-    localStorage.setItem('perfValue', snapped);
-    sessionStorage.setItem('perfValue', snapped);
-  } catch (err) {
-    console.warn('Nie udało się zapisać w storage:', err);
-  }
+  await setValue(snapped);
   applyOptimizations(snapped);
 
-  // Update gradient (jak miałeś, bez zmian)
+  // Update gradient (bez zmian)
   const colors = {
     0: "linear-gradient(90deg, #ff3333, #ff5555)",
     50: "linear-gradient(90deg, #ffaa33, #ffdd33)",
@@ -852,23 +898,16 @@ perfRange?.addEventListener('change', (e) => {
   e.target.style.background = colors[snapped] || colors[0];
 });
 
-// Automatyczny zapis na wyjście/minimize (dla mobile/PWA)
-window.addEventListener('beforeunload', () => {
+// Automatyczny zapis na wyjście/minimize
+window.addEventListener('beforeunload', async () => {
   const currentValue = snapValue(perfRange.value);
-  try {
-    localStorage.setItem('perfValue', currentValue);
-    sessionStorage.setItem('perfValue', currentValue);
-  } catch {} // Cichy, bo unload może być szybki
+  await setValue(currentValue);
 });
 
-// Dla visibility change (np. app w tle na mobile)
-document.addEventListener('visibilitychange', () => {
+document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState === 'hidden') {
     const currentValue = snapValue(perfRange.value);
-    try {
-      localStorage.setItem('perfValue', currentValue);
-      sessionStorage.setItem('perfValue', currentValue);
-    } catch {}
+    await setValue(currentValue);
   }
 });
 

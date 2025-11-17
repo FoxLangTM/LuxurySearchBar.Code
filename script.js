@@ -125,7 +125,7 @@ function buildCardHTML(r) {
         <p class="results-res-text">${escapeHtml(r.snippet)}</p>
         <img src="${escapeHtml(r.image)}" class="results-res-mini" loading="lazy"/>
       </div>
-      <a href="${escapeHtml(r.link)}" target="_blank" rel="noopener">${escapeHtml(r.displayLink)}</a>
+      <span class="fake-link" data-url="${escapeHtml(r.link)}">${escapeHtml(r.displayLink)}</span>
     </div>
   `;
 }
@@ -932,7 +932,7 @@ function updateCategory(index) {
 
 
 // ================================================================
-// FOXCORP – NAKŁADKA IFRAME – DZIAŁA NA 100% Z TWOJĄ STRUKTURĄ
+// FOXCORP – NAKŁADKA IFRAME – DZIAŁA 100% BEZ ŻADNYCH <a>
 // ================================================================
 
 const firefoxOverlay = document.createElement('div');
@@ -942,35 +942,17 @@ firefoxOverlay.innerHTML = `
     <button id="closeFirefoxOverlay">✕</button>
     <div id="firefoxCurrentUrl">FoxCorp • Przeglądanie</div>
   </div>
-  <iframe id="firefoxIframe" src="about:blank" 
-    sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-downloads allow-top-navigation-by-user-activation">
-  </iframe>
+  <iframe id="firefoxIframe" src="about:blank" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-downloads"></iframe>
 `;
 document.body.appendChild(firefoxOverlay);
 
 const overlayCSS = document.createElement('style');
 overlayCSS.textContent = `
-  .firefox-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: #000; z-index: 99999; display: none; flex-direction: column;
-  }
+  .firefox-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #000; z-index: 99999; display: none; flex-direction: column; }
   .firefox-overlay.active { display: flex; }
-  .firefox-header {
-    height: 56px; background: linear-gradient(145deg, #1a1a1a, #0c0c1f);
-    border-bottom: 3px solid #00aaff; display: flex; align-items: center;
-    padding: 0 15px; gap: 15px; box-shadow: 0 6px 30px rgba(0,170,255,0.5);
-  }
-  #closeFirefoxOverlay {
-    width: 46px; height: 46px; background: linear-gradient(45deg, #ff3366, #ff5577);
-    border: none; border-radius: 50%; color: white; font-size: 22px;
-    box-shadow: 0 0 25px rgba(255,50,100,0.8); cursor: pointer;
-  }
-  #closeFirefoxOverlay:active { transform: scale(0.9); }
-  #firefoxCurrentUrl {
-    color: #00eeff; font-size: 15px; font-weight: bold;
-    text-shadow: 0 0 10px #00eeff; flex: 1; overflow: hidden;
-    white-space: nowrap; text-overflow: ellipsis;
-  }
+  .firefox-header { height: 56px; background: linear-gradient(145deg, #1a1a1a, #0c0c1f); border-bottom: 3px solid #00aaff; display: flex; align-items: center; padding: 0 15px; gap: 15px; box-shadow: 0 6px 30px rgba(0,170,255,0.5); }
+  #closeFirefoxOverlay { width: 46px; height: 46px; background: linear-gradient(45deg, #ff3366, #ff5577); border: none; border-radius: 50%; color: white; font-size: 22px; box-shadow: 0 0 25px rgba(255,50,100,0.8); cursor: pointer; }
+  #firefoxCurrentUrl { color: #00eeff; font-size: 15px; font-weight: bold; text-shadow: 0 0 10px #00eeff; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
   #firefoxIframe { flex: 1; border: none; background: white; }
 `;
 document.head.appendChild(overlayCSS);
@@ -978,44 +960,25 @@ document.head.appendChild(overlayCSS);
 const iframe = document.getElementById('firefoxIframe');
 const urlDisplay = document.getElementById('firefoxCurrentUrl');
 
-// KLUCZOWA POPRAWKA – DZIAŁA NA TWOJEJ STRUKTURZE!
-document.addEventListener('click', function(e) {
-  // Szukamy kliknięcia w całą kartę wyniku
+// KLIKNIĘCIE W CAŁY WYNIK – DZIAŁA ZAWSZE
+document.addEventListener('click', e => {
   const card = e.target.closest('.results-res-card');
   if (!card) return;
 
-  // Wewnątrz karty szukamy <a> z href
-  const link = card.querySelector('a[href]');
-  if (!link || !link.href) return;
+  // Bierzemy URL z data-url w span.fake-link
+  const fakeLink = card.querySelector('.fake-link');
+  if (!fakeLink || !fakeLink.dataset.url) return;
 
-  e.preventDefault();
-  e.stopPropagation();
+  let url = fakeLink.dataset.url.trim();
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
 
-  let url = link.href.trim();
-
-  // Dodajemy https jeśli brakuje
-  if (!/^https?:\/\//i.test(url)) {
-    url = 'https://' + url;
-  }
-
-  // Otwieramy w nakładce
   iframe.src = url;
   urlDisplay.textContent = url;
   firefoxOverlay.classList.add('active');
 });
 
-// Zamknij przyciskiem X
+// Zamknij
 document.getElementById('closeFirefoxOverlay')?.addEventListener('click', () => {
   firefoxOverlay.classList.remove('active');
-  setTimeout(() => {
-    iframe.src = 'about:blank';
-    urlDisplay.textContent = 'FoxCorp • Przeglądanie';
-  }, 300);
-});
-
-// Opcjonalnie: ESC zamyka
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && firefoxOverlay.classList.contains('active')) {
-    document.getElementById('closeFirefoxOverlay').click();
-  }
+  setTimeout(() => iframe.src = 'about:blank', 300);
 });

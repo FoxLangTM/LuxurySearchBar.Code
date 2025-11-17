@@ -932,10 +932,9 @@ function updateCategory(index) {
 
 
 // ================================================================
-// FOXCORP – JEDEN STAŁY IFRAME JAKO NAKŁADKA (np. firefox.com / duckduckgo.com)
+// FOXCORP – NAKŁADKA IFRAME – DZIAŁA NA 100% Z TWOJĄ STRUKTURĄ
 // ================================================================
 
-// 1. Tworzymy stały kontener z iframe’em (na początku ukryty)
 const firefoxOverlay = document.createElement('div');
 firefoxOverlay.className = 'firefox-overlay';
 firefoxOverlay.innerHTML = `
@@ -943,92 +942,75 @@ firefoxOverlay.innerHTML = `
     <button id="closeFirefoxOverlay">✕</button>
     <div id="firefoxCurrentUrl">FoxCorp • Przeglądanie</div>
   </div>
-  <iframe id="firefoxIframe" src="about:blank" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-downloads"></iframe>
+  <iframe id="firefoxIframe" src="about:blank" 
+    sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-downloads allow-top-navigation-by-user-activation">
+  </iframe>
 `;
 document.body.appendChild(firefoxOverlay);
 
-// 2. Stylowanie – neonowy header + pełnoekranowy iframe
 const overlayCSS = document.createElement('style');
 overlayCSS.textContent = `
   .firefox-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: #000;
-    z-index: 99999;
-    display: none;
-    flex-direction: column;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: #000; z-index: 99999; display: none; flex-direction: column;
   }
-  .firefox-overlay.active {
-    display: flex;
-  }
+  .firefox-overlay.active { display: flex; }
   .firefox-header {
-    height: 56px;
-    background: linear-gradient(145deg, #1a1a1a, #0c0c1f);
-    border-bottom: 3px solid #00aaff;
-    display: flex;
-    align-items: center;
-    padding: 0 15px;
-    gap: 15px;
-    box-shadow: 0 6px 30px rgba(0,170,255,0.5);
-    flex-shrink: 0;
+    height: 56px; background: linear-gradient(145deg, #1a1a1a, #0c0c1f);
+    border-bottom: 3px solid #00aaff; display: flex; align-items: center;
+    padding: 0 15px; gap: 15px; box-shadow: 0 6px 30px rgba(0,170,255,0.5);
   }
   #closeFirefoxOverlay {
-    width: 46px; height: 46px;
-    background: linear-gradient(45deg, #ff3366, #ff5577);
-    border: none; border-radius: 50%;
-    color: white; font-size: 22px;
-    box-shadow: 0 0 25px rgba(255,50,100,0.8);
-    cursor: pointer;
+    width: 46px; height: 46px; background: linear-gradient(45deg, #ff3366, #ff5577);
+    border: none; border-radius: 50%; color: white; font-size: 22px;
+    box-shadow: 0 0 25px rgba(255,50,100,0.8); cursor: pointer;
   }
   #closeFirefoxOverlay:active { transform: scale(0.9); }
   #firefoxCurrentUrl {
-    color: #00eeff;
-    font-size: 15px;
-    font-weight: bold;
-    text-shadow: 0 0 10px #00eeff;
-    flex: 1;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    color: #00eeff; font-size: 15px; font-weight: bold;
+    text-shadow: 0 0 10px #00eeff; flex: 1; overflow: hidden;
+    white-space: nowrap; text-overflow: ellipsis;
   }
-  #firefoxIframe {
-    flex: 1;
-    border: none;
-    width: 100%;
-    height: 100%;
-    background: white;
-  }
+  #firefoxIframe { flex: 1; border: none; background: white; }
 `;
 document.head.appendChild(overlayCSS);
 
-// 3. Elementy
 const iframe = document.getElementById('firefoxIframe');
 const urlDisplay = document.getElementById('firefoxCurrentUrl');
 
-// 4. KLIKNIĘCIE W DOWOLNY WYNIK → otwieramy w iframe’ie (TERAZ DZIAŁA!)
-document.addEventListener('click', e => {
+// KLUCZOWA POPRAWKA – DZIAŁA NA TWOJEJ STRUKTURZE!
+document.addEventListener('click', function(e) {
+  // Szukamy kliknięcia w całą kartę wyniku
   const card = e.target.closest('.results-res-card');
   if (!card) return;
+
+  // Wewnątrz karty szukamy <a> z href
+  const link = card.querySelector('a[href]');
+  if (!link || !link.href) return;
 
   e.preventDefault();
   e.stopPropagation();
 
-  const link = card.querySelector('a[href]');
-  if (!link || !link.href) return;
+  let url = link.href.trim();
 
-  let url = link.href;
-  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  // Dodajemy https jeśli brakuje
+  if (!/^https?:\/\//i.test(url)) {
+    url = 'https://' + url;
+  }
 
+  // Otwieramy w nakładce
   iframe.src = url;
   urlDisplay.textContent = url;
   firefoxOverlay.classList.add('active');
 });
 
-// 5. Zamknij nakładkę
+// Zamknij przyciskiem X
 document.getElementById('closeFirefoxOverlay')?.addEventListener('click', () => {
   firefoxOverlay.classList.remove('active');
-  iframe.src = 'about:blank';
-  urlDisplay.textContent = 'FoxCorp • Przeglądanie';
+  setTimeout(() => {
+    iframe.src = 'about:blank';
+    urlDisplay.textContent = 'FoxCorp • Przeglądanie';
+  }, 300);
 });
 
 // Opcjonalnie: ESC zamyka

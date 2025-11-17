@@ -931,144 +931,144 @@ function updateCategory(index) {
 
 
 
+// ==================== FULL-SCREEN BROWSER INSIDE FOXCORP ====================
 
-// ==================== BROWSER VIEW – iframe wewnątrz FoxCorp ====================
-
-const browserView = document.createElement('div');
-browserView.className = 'browser-view';
-browserView.innerHTML = `
-  <div class="browser-nav">
-    <button id="browserBack">←</button>
-    <button id="browserForward">→</button>
-    <button id="browserRefresh">↻</button>
-    <button id="browserHome">⌂</button>
-    <div class="browser-url-bar" id="browserUrlBar">FoxCorp • Your own browser</div>
+// Tworzymy pełnoekranowy kontener (z-index najwyższy)
+const fullBrowser = document.createElement('div');
+fullBrowser.className = 'fox-full-browser';
+fullBrowser.innerHTML = `
+  <div class="fox-browser-header">
+    <button id="foxCloseBrowser">✕</button>
+    <button id="foxBrowserBack">←</button>
+    <button id="foxBrowserForward">→</button>
+    <button id="foxBrowserRefresh">↻</button>
+    <div class="fox-url-display" id="foxUrlDisplay">FoxCorp</div>
   </div>
-  <iframe id="foxIframe" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-downloads"></iframe>
+  <iframe id="foxFullIframe" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-downloads allow-top-navigation-by-user-activation"></iframe>
 `;
-document.body.appendChild(browserView);
+document.body.appendChild(fullBrowser);
 
-// Styl dla nowego widoku (dodaj do style.css lub wklej w <style> w head)
-const browserStyle = document.createElement('style');
-browserStyle.textContent = `
-  .browser-view {
+// Natychmiastowy styl – wrzuca się do head, działa od razu
+const fullBrowserCSS = document.createElement('style');
+fullBrowserCSS.textContent = `
+  .fox-full-browser {
     position: fixed;
-    inset: 0;
-    background: #111;
-    z-index: 50;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #000;
+    z-index: 99999;
     display: none;
     flex-direction: column;
+    font-family: sans-serif;
   }
-  .browser-view.show { display: flex; }
+  .fox-full-browser.active { display: flex; }
 
-  .browser-nav {
-    height: 50px;
-    background: linear-gradient(145deg, #1e1e1e, #0d0d0d);
-    border-bottom: 1px solid #00aaff;
+  .fox-browser-header {
+    height: 56px;
+    background: linear-gradient(145deg, #1a1a1a, #0f0f1f);
+    border-bottom: 2px solid #00aaff;
     display: flex;
     align-items: center;
-    padding: 0 15px;
-    gap: 15px;
-    box-shadow: 0 4px 20px rgba(0,170,255,0.3);
+    padding: 0 12px;
+    gap: 12px;
+    box-shadow: 0 4px 30px rgba(0,170,255,0.4);
+    flex-shrink: 0;
   }
-  .browser-nav button {
-    width: 40px; height: 40px;
+  .fox-browser-header button {
+    width: 44px; height: 44px;
     background: linear-gradient(45deg, #a9a9a9, #00aaff);
     border: none;
     border-radius: 50%;
-    color: #fff;
+    color: white;
     font-size: 20px;
     cursor: pointer;
-    box-shadow: 0 0 15px rgba(0,170,255,0.6), inset 0 0 8px rgba(169,169,169,0.5);
-    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(0,170,255,0.7);
+    transition: all 0.2s;
   }
-  .browser-nav button:active {
-    transform: scale(0.9);
-    box-shadow: 0 0 25px rgba(0,170,255,1);
+  .fox-browser-header button:active {
+    transform: scale(0.88);
+    box-shadow: 0 0 30px #00eeff;
   }
-  .browser-url-bar {
+  #foxCloseBrowser {
+    background: linear-gradient(45deg, #ff3366, #ff5577);
+    box-shadow: 0 0 20px rgba(255,50,100,0.7);
+  }
+  .fox-url-display {
     flex: 1;
     color: #00eeff;
-    font-family: monospace;
-    font-size: 14px;
-    padding: 0 15px;
-    white-space: nowrap;
+    font-size: 15px;
+    text-shadow: 0 0 10px #00eeff;
     overflow: hidden;
+    white-space: nowrap;
     text-overflow: ellipsis;
-    text-shadow: 0 0 8px rgba(0,238,255,0.7);
+    padding: 0 10px;
   }
-  #foxIframe {
+  #foxFullIframe {
     flex: 1;
     border: none;
-    background: #fff;
-  }
-  @media (prefers-color-scheme: dark) {
-    #foxIframe { background: #000; }
+    width: 100%;
+    height: 100%;
   }
 `;
-document.head.appendChild(browserStyle);
+document.head.appendChild(fullBrowserCSS);
 
 // Elementy
-const iframe = document.getElementById('foxIframe');
-const urlBar = document.getElementById('browserUrlBar');
-let currentUrl = 'about:blank';
+const iframe = document.getElementById('foxFullIframe');
+const urlDisplay = document.getElementById('foxUrlDisplay');
+let iframeHistory = [];
+let iframeHistoryIndex = -1;
 
-// Funkcja otwierająca link w iframe
-function openInBrowser(url) {
-  if (!url || url === 'about:blank') return;
+// Funkcja otwierająca link w NASZEJ aplikacji (bez uciekania do Chrome’a)
+function openFoxBrowser(url) {
+  if (!url) return;
   if (!url.startsWith('http://') && !url.startsWith('https://')) {
     url = 'https://' + url;
   }
-  currentUrl = url;
+
   iframe.src = url;
-  urlBar.textContent = url;
-  browserView.classList.add('show');
-  history.pushState({ url }, '', '#view');
+  urlDisplay.textContent = url;
+  fullBrowser.classList.add('active');
+
+  // Zapisujemy w naszej własnej historii
+  iframeHistory.push(url);
+  iframeHistoryIndex = iframeHistory.length - 1;
 }
 
-// Przechwytujemy wszystkie linki z wyników (zamiast target="_blank")
+// PRZECHWYTUJEMY WSZYSTKIE KLIKNIĘCIA W LINKI Z WYNIKÓW
 document.addEventListener('click', (e) => {
   const link = e.target.closest('a[href]');
-  if (link && link.getAttribute('target') === '_blank') {
-    e.preventDefault();
+  if (link) {
     const href = link.getAttribute('href');
-    openInBrowser(href);
+    if (href && !href.startsWith('javascript:') && !href.startsWith('#')) {
+      e.preventDefault();                // blokujemy domyślne otwarcie
+      openFoxBrowser(href);
+    }
   }
 });
 
-// Nawigacja
-document.getElementById('browserBack')?.addEventListener('click', () => {
-  history.back();
-});
-document.getElementById('browserForward')?.addEventListener('click', () => {
-  history.forward();
-});
-document.getElementById('browserRefresh')?.addEventListener('click', () => {
-  iframe.src = currentUrl;
-});
-document.getElementById('browserHome')?.addEventListener('click', () => {
-  browserView.classList.remove('show');
+// Przyciski nawigacji
+document.getElementById('foxCloseBrowser')?.addEventListener('click', () => {
+  fullBrowser.classList.remove('active');
   iframe.src = 'about:blank';
-  history.pushState(null, '', location.pathname);
+  // opcjonalnie: wróć do wyników wyszukiwania
+  document.querySelector('.results-root')?.style.display = 'block';
 });
 
-// Obsługa wstecz / przód w aplikacji
-window.addEventListener('popstate', (e) => {
-  if (location.hash === '#view' && e.state?.url) {
-    browserView.classList.add('show');
-    iframe.src = e.state.url;
-    urlBar.textContent = e.state.url;
-    currentUrl = e.state.url;
-  } else {
-    browserView.classList.remove('show');
-    iframe.src = 'about:blank';
+document.getElementById('foxBrowserBack')?.addEventListener('click', () => {
+  if (iframeHistoryIndex > 0) {
+    iframeHistoryIndex--;
+    iframe.src = iframeHistory[iframeHistoryIndex];
+    urlDisplay.textContent = iframeHistory[iframeHistoryIndex];
   }
 });
 
-// Zamknij widok przeglądarki klikając poza (opcjonalnie – możesz wyłączyć)
-browserView.addEventListener('click', (e) => {
-  if (e.target === browserView) {
-    browserView.classList.remove('show');
-    history.back();
+document.getElementById('foxBrowserForward')?.addEventListener('click', () => {
+  if (iframeHistoryIndex < iframeHistory.length - 1) {
+    iframeHistoryIndex++;
+    iframe.src = iframeHistory[iframeHistoryIndex];
+    urlDisplay.textContent = iframeHistory[iframeHistoryIndex];
   }
+});
+
+document.getElementById('foxBrowserRefresh')?.addEventListener('click', () => {
+  iframe.src = iframe.src; // proste odświeżenie
 });

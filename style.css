@@ -722,3 +722,54 @@ from -90deg,
   background: linear-gradient(145deg, #2BE501, #33ff66) !important; /* Zielony neon z mrocznym halo */
   box-shadow: 0 0 10px rgba(0,100,0,0.8) !important; /* Ciemniejszy zielony dla oszczędności */
 }
+
+#foxIframeOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.9);
+  z-index: 1000; /* Wyżej niż settings-overlay (z-index:999) */
+  display: none;
+  flex-direction: column;
+}
+
+#foxIframeOverlay.show {
+  display: flex;
+}
+
+.fox-header {
+  height: 56px;
+  background: linear-gradient(145deg, #1a1a1a, #0c0c1f);
+  border-bottom: 3px solid #00aaff;
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+  gap: 15px;
+  box-shadow: 0 6px 30px rgba(0,170,255,0.5);
+}
+
+#foxClose {
+  width: 48px;
+  height: 48px;
+  background: #ff3366;
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+#foxUrlText {
+  color: #00eeff;
+  font-size: 15px;
+  font-weight: bold;
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+#foxIframe {
+  flex: 1;
+  border: none;
+  background: white;
+}

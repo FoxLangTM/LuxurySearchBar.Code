@@ -91,7 +91,7 @@ function resolveDuckHref(href) {
 // ======= Fetch DuckDuckGo results =======
 async function fetchResultsDDG(query, page = 0, perPage = 8) {
   const start = page * perPage;
-  const target = `https://duckduckgo.com/html/?q=${encodeURIComponent(query)}&s=${start}`;
+  const target = `https://duckduckgo.com/html/?q=\( {encodeURIComponent(query)}&s= \){start}`;
   const text = await fetchWithProxyText(target);
   if (!text) return [];
 
@@ -125,9 +125,7 @@ function buildCardHTML(r) {
         <p class="results-res-text">${escapeHtml(r.snippet)}</p>
         <img src="${escapeHtml(r.image)}" class="results-res-mini" loading="lazy"/>
       </div>
-      <div class="fake-link" data-url="${escapeHtml(r.link)}">
-        ${escapeHtml(r.displayLink)}
-      </div>
+      <a href="\( {escapeHtml(r.link)}" target="_blank" rel="noopener"> \){escapeHtml(r.displayLink)}</a>
     </div>
   `;
 }
@@ -238,7 +236,7 @@ document.addEventListener("DOMContentLoaded", setupTrigger);
 // ======= Suggestions =======
 async function fetchSuggestions(q){
   if(!q) return [];
-  const target=`https://suggestqueries.google.com/complete/search?client=firefox&hl=${lang}&q=${encodeURIComponent(q)}`;
+  const target=`https://suggestqueries.google.com/complete/search?client=firefox&hl=\( {lang}&q= \){encodeURIComponent(q)}`;
   for(const proxy of proxies){
     try{
       const res=await fetch(proxy+encodeURIComponent(target),{cache:"no-store"});
@@ -344,8 +342,8 @@ function cancelCloseHold() {
 
 closeLine.addEventListener("mousedown", startCloseHold);
 closeLine.addEventListener("touchstart", startCloseHold, {passive:true});
-document.addEventListener("mouseup", cancelCloseHold);
-document.addEventListener("touchend", cancelCloseHold);
+document.addEventListener("mouseup", cancelHold);
+document.addEventListener("touchend", cancelHold);
 
 
 
@@ -514,7 +512,7 @@ assistantObserver.observe(document.body,{childList:true,subtree:true});
 // ======= Assistant translation / language =======
 const assistantUserLang=(navigator.languages?.[0]||navigator.language||"en").split("-")[0];
 async function detectLanguage(text){ try{const proxy=proxies[Math.floor(Math.random()*proxies.length)]; const url=proxy+encodeURIComponent(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=|en`); const res=await fetch(url); if(!res||!res.ok)return assistantUserLang; const data=await res.json(); return data?.responseData?.detectedLanguage||assistantUserLang;}catch{return assistantUserLang;} }
-async function fetchTranslation(text,fromLang){ try{ const proxy=proxies[Math.floor(Math.random()*proxies.length)]; const url=`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${fromLang}|${assistantUserLang}`; const res=await fetch(proxy+encodeURIComponent(url)); if(!res||!res.ok) return "📍 Serwer niedostępny."; const data=await res.json(); return data?.responseData?.translatedText||"Brak odpowiedzi"; }catch{return "📍 Serwer niedostępny.";}}
+async function fetchTranslation(text,fromLang){ try{ const proxy=proxies[Math.floor(Math.random()*proxies.length)]; const url=`https://api.mymemory.translated.net/get?q=\( {encodeURIComponent(text)}&langpair= \){fromLang}|${assistantUserLang}`; const res=await fetch(proxy+encodeURIComponent(url)); if(!res||!res.ok) return "📍 Serwer niedostępny."; const data=await res.json(); return data?.responseData?.translatedText||"Brak odpowiedzi"; }catch{return "📍 Serwer niedostępny.";}}
 async function fetchGroqAnswer(prompt){ return `📌 (Podsumowanie tymczasowe) ${prompt.slice(0,120)}...`;}
 
 // ======= Init DOMContentLoaded =======
@@ -522,6 +520,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ensureResultsRoot();
   setupTrigger();
 });
+
 
 function createPerfControl(dotId) {
   let level = 1;
@@ -544,12 +543,12 @@ function createPerfControl(dotId) {
   function getColorAt(percent) {
     const x = Math.floor((percent / 100) * (canvas.width - 1));
     const [r, g, b] = ctx.getImageData(x, 0, 1, 1).data;
-    return `rgb(${r}, ${g}, ${b})`;
+    return `rgb(\( {r}, \){g}, ${b})`;
   }
 
   function darkenColor(color, factor = 0.7) {
     const [_, r, g, b] = color.match(/rgb\((\d+), (\d+), (\d+)\)/);
-    return `rgba(${Math.floor(r * factor)}, ${Math.floor(g * factor)}, ${Math.floor(b * factor)}, 0.8)`;
+    return `rgba(\( {Math.floor(r * factor)}, \){Math.floor(g * factor)}, ${Math.floor(b * factor)}, 0.8)`;
   }
 
   function startDrag(e) {
@@ -796,128 +795,34 @@ function initWebGLNeonBackground() {
 }
 
 const perfRange = document.getElementById('perfRange3');
-const perfWrapper = document.querySelector('.performance-range-wrapper');
 
-// Wrapper dla IndexedDB (z fallback na sessionStorage)
-const DB_NAME = 'FoxCorpDB';
-const DB_VERSION = 1;
-const STORE_NAME = 'perfStore';
-const KEY = 'perfValue';
+// Na load, odczytaj z localStorage
+let savedValue = localStorage.getItem('perfValue') || '0'; // Zapisujemy value suwaka dla spójności
+perfRange.value = savedValue;
+applyOptimizations(savedValue);
 
-async function openDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME);
-      }
-    };
-  });
-}
-
-async function getValue() {
-  try {
-    const db = await openDB();
-    return new Promise((resolve) => {
-      const transaction = db.transaction(STORE_NAME, 'readonly');
-      const store = transaction.objectStore(STORE_NAME);
-      const request = store.get(KEY);
-      request.onsuccess = () => resolve(request.result || '0');
-      request.onerror = () => resolve('0');
-    });
-  } catch {
-    console.warn('Błąd IndexedDB, fallback na sessionStorage');
-    return sessionStorage.getItem(KEY) || '0';
-  }
-}
-
-async function setValue(value) {
-  try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction(STORE_NAME, 'readwrite');
-      const store = transaction.objectStore(STORE_NAME);
-      const request = store.put(value, KEY);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-      transaction.oncomplete = () => {
-        if (navigator.storage && navigator.storage.persist) {
-          navigator.storage.persist().then(granted => {
-            if (granted) console.log('Persistent storage granted');
-          });
-        }
-      };
-    });
-  } catch (err) {
-    console.warn('Nie udało się zapisać w IndexedDB:', err);
-    sessionStorage.setItem(KEY, value); // Backup
-  }
-}
-
-// Funkcja do obliczania procentowej pozycji dot'a (thumb) względem wrappera linii
-function getDotPercent() {
-  if (!perfRange || !perfWrapper) return 0;
-  const rect = perfWrapper.getBoundingClientRect();
-  const thumbRect = perfRange.getBoundingClientRect(); // Przybliżenie pozycji thumb'a
-  const percent = ((thumbRect.left - rect.left + thumbRect.width / 2) / rect.width) * 100;
-  return Math.max(0, Math.min(100, percent));
-}
-
-// Funkcja snapująca na podstawie pozycji (dla apply)
-function snapValue(percent) {
-  if (percent < 25) return 0;
-  else if (percent <= 75) return 50;
-  else return 100;
-}
-
-// Na load: Odczytaj, ustaw value na raw, apply na snapowanej pozycji
-(async () => {
-  let savedValue = await getValue();
-  perfRange.value = savedValue; // Raw value dla pozycji
-  const percent = getDotPercent(); // Oblicz aktualną pozycję
-  applyOptimizations(snapValue(percent));
-  if (navigator.storage && navigator.storage.persist) {
-    navigator.storage.persist().then(granted => {
-      if (granted) console.log('Persistent storage granted');
-    });
-  }
-})();
-
-// Na input: Zapis raw value, ale apply na bieżącej pozycji dot'a
-perfRange?.addEventListener('input', async (e) => {
-  await setValue(e.target.value); // Zapisz raw
-  const percent = getDotPercent(); // Mierz pozycję dot'a
-  applyOptimizations(snapValue(percent)); // Apply tryb
+// Na input, zapisz dynamicznie podczas drag
+perfRange?.addEventListener('input', (e) => {
+  localStorage.setItem('perfValue', e.target.value); // Zapisz pozycję podczas ruchu
 });
 
-// Na change: To samo, finalny zapis i apply
-perfRange?.addEventListener('change', async (e) => {
-  await setValue(e.target.value);
-  const percent = getDotPercent();
-  applyOptimizations(snapValue(percent));
+// Na change, zapisz i zastosuj po release
+perfRange?.addEventListener('change', (e) => {
+  let value = parseInt(e.target.value);
+  if (value < 25) value = 0; // Low end: max moc
+  else if (value > 25 && value < 75) value = 50; // Half: zrównoważona
+  else value = 100; // Full end: optymalizacja oszczędna
+  e.target.value = value;
+  localStorage.setItem('perfValue', value); // Zapisz finalną pozycję
+  applyOptimizations(value);
 
-  // Update gradient na podstawie snap
-  const snapped = snapValue(percent);
+  // Update gradient (dostosowany do low/half/full)
   const colors = {
     0: "linear-gradient(90deg, #ff3333, #ff5555)",
     50: "linear-gradient(90deg, #ffaa33, #ffdd33)",
     100: "linear-gradient(90deg, #33ff66, #66ffaa)"
   };
-  e.target.style.background = colors[snapped] || colors[0];
-});
-
-// Automatyczny zapis raw na wyjście
-window.addEventListener('beforeunload', async () => {
-  await setValue(perfRange.value);
-});
-
-document.addEventListener('visibilitychange', async () => {
-  if (document.visibilityState === 'hidden') {
-    await setValue(perfRange.value);
-  }
+  e.target.style.background = colors[value] || colors[0];
 });
 
 
@@ -930,61 +835,3 @@ function updateCategory(index) {
   const layer = document.getElementById(`variation_layer${index + 1}`);
   if (layer) layer.style.display = "flex";
 }
-
-
-
-// ================================================================
-// FOXCORP – BEZPIECZNY IFRAME, DZIAŁA PO KLIKNIĘCIU W WYNIK
-// ================================================================
-
-// Elementy z HTML (zakładam iframe w HTML: <iframe id="foxIframe" src="" hidden></iframe>)
-const foxIframe = document.getElementById('foxIframe');
-const foxOverlay = document.getElementById('foxIframeOverlay');
-const foxUrlText = document.getElementById('foxUrlText');
-
-// Styl z kreatywnym, metaliczno-neonowym gradientem i halo (pulsujący dla "mocy")
-const style = document.createElement('style');
-style.textContent = `
-  #foxIframeOverlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #000; z-index: 99999; display: none; flex-direction: column; }
-  #foxIframeOverlay.active { display: flex; animation: neon-pulse 0.8s ease-out; }
-  .fox-header { height: 56px; background: linear-gradient(145deg, #a9a9a9, #00aaff); border-bottom: 3px solid #00eeff; display: flex; align-items: center; padding: 0 15px; gap: 15px; box-shadow: 0 0 25px rgba(0,170,255,0.8), inset 0 0 5px rgba(0,0,0,0.4); }
-  #foxClose { width: 48px; height: 48px; background: #ff3366; border: none; border-radius: 50%; color: white; font-size: 24px; cursor: pointer; box-shadow: 0 0 20px #ff5577; }
-  #foxUrlText { color: #ffffff; font-size: 15px; font-weight: bold; text-shadow: 0 0 10px #00eeff; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-  #foxIframe { flex: 1; border: none; background: white; }
-  @keyframes neon-pulse { 0% { box-shadow: 0 0 15px rgba(0,170,255,0.6); } 50% { box-shadow: 0 0 35px rgba(0,170,255,1); } 100% { box-shadow: 0 0 25px rgba(0,170,255,0.8); } }
-`;
-document.head.appendChild(style);
-
-// KLIKNIĘCIE W WYNIK – POBIERA URL Z <a> I OTWIERA IFRAME
-document.addEventListener('click', e => {
-  const card = e.target.closest('.results-res-card');
-  if (!card) return;
-
-  const urlEl = card.querySelector('a[href]');
-  if (!urlEl) return;
-
-  let url = urlEl.href;
-  if (!url.startsWith('http')) url = 'https://' + url;
-
-  foxIframe.src = url;
-  foxOverlay.style.display = 'flex';
-  foxUrlText.textContent = url;
-
-  e.preventDefault();
-  e.stopPropagation();
-});
-
-// ZAMKNIJ OVERLAY
-const closeFox = () => {
-  foxOverlay.style.display = 'none';
-  foxIframe.src = 'about:blank';
-  foxUrlText.textContent = 'FoxCorp • Przeglądanie';
-};
-
-document.getElementById('foxClose')?.addEventListener('click', closeFox);
-document.addEventListener('keydown', e => {
-  if ((e.key === 'Escape' || e.key === 'Backspace') && foxOverlay.style.display === 'flex') closeFox();
-});
-window.addEventListener('popstate', () => {
-  if (foxOverlay.style.display === 'flex') closeFox();
-});

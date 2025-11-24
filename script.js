@@ -934,76 +934,57 @@ function updateCategory(index) {
 
 
 // ================================================================
-// FOXCORP – NAKŁADKA IFRAME – DZIAŁA 100%, BEZ KONFLIKTÓW ZMIENNYCH
+// FOXCORP – BEZPIECZNY IFRAME, DZIAŁA PO KLIKNIĘCIU W WYNIK
 // ================================================================
 
-// Używamy innych nazw – ŻADNEJ kolizji z Twoim istniejącym "overlay"
-const foxIframeOverlay = document.createElement('div');
-foxIframeOverlay.id = 'foxIframeOverlay';
-foxIframeOverlay.innerHTML = `
-  <div class="fox-header">
-    <button id="foxClose">✕</button>
-    <div id="foxUrlText">FoxCorp • Przeglądanie</div>
-  </div>
-  <iframe id="foxIframe" src="about:blank" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-downloads"></iframe>
-`;
-document.body.appendChild(foxIframeOverlay);
+// Elementy z HTML (zakładam iframe w HTML: <iframe id="foxIframe" src="" hidden></iframe>)
+const foxIframe = document.getElementById('foxIframe');
+const foxOverlay = document.getElementById('foxIframeOverlay');
+const foxUrlText = document.getElementById('foxUrlText');
 
-// Styl (też bez konfliktów)
-const foxOverlayCSS = document.createElement('style');
-foxOverlayCSS.textContent = `
-  #foxIframeOverlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: #000; z-index: 999999; display: none; flex-direction: column;
-  }
-  #foxIframeOverlay.active { display: flex; }
-  .fox-header {
-    height: 56px; background: linear-gradient(145deg, #111, #000);
-    border-bottom: 3px solid #00aaff; display: flex; align-items: center;
-    padding: 0 12px; gap: 12px; box-shadow: 0 6px 30px rgba(0,170,255,0.5);
-  }
-  #foxClose {
-    width: 48px; height: 48px; background: #ff3366; border: none; border-radius: 50%;
-    color: white; font-size: 24px; cursor: pointer;
-  }
-  #foxUrlText {
-    color: #00eeff; font-weight: bold; flex: 1; font-size: 15px;
-    text-shadow: 0 0 10px #00eeff; overflow: hidden; white-space: nowrap;
-  }
-  #foxIframe { flex: 1; border: none; }
-  .fake-link {
-    color: #00aaff; font-size: 14px; cursor: pointer; margin-top: 8px;
-    text-decoration: underline; display: block;
-  }
-  .fake-link:hover { color: #00eeff; text-shadow: 0 0 8px #00eeff; }
+// Styl z kreatywnym, metaliczno-neonowym gradientem i halo (pulsujący dla "mocy")
+const style = document.createElement('style');
+style.textContent = `
+  #foxIframeOverlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #000; z-index: 99999; display: none; flex-direction: column; }
+  #foxIframeOverlay.active { display: flex; animation: neon-pulse 0.8s ease-out; }
+  .fox-header { height: 56px; background: linear-gradient(145deg, #a9a9a9, #00aaff); border-bottom: 3px solid #00eeff; display: flex; align-items: center; padding: 0 15px; gap: 15px; box-shadow: 0 0 25px rgba(0,170,255,0.8), inset 0 0 5px rgba(0,0,0,0.4); }
+  #foxClose { width: 48px; height: 48px; background: #ff3366; border: none; border-radius: 50%; color: white; font-size: 24px; cursor: pointer; box-shadow: 0 0 20px #ff5577; }
+  #foxUrlText { color: #ffffff; font-size: 15px; font-weight: bold; text-shadow: 0 0 10px #00eeff; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  #foxIframe { flex: 1; border: none; background: white; }
+  @keyframes neon-pulse { 0% { box-shadow: 0 0 15px rgba(0,170,255,0.6); } 50% { box-shadow: 0 0 35px rgba(0,170,255,1); } 100% { box-shadow: 0 0 25px rgba(0,170,255,0.8); } }
 `;
-document.head.appendChild(foxOverlayCSS);
+document.head.appendChild(style);
 
-// Kliknięcie w wynik – działa 100%
-document.addEventListener('click', function(e) {
+// KLIKNIĘCIE W WYNIK – POBIERA URL Z <a> I OTWIERA IFRAME
+document.addEventListener('click', e => {
   const card = e.target.closest('.results-res-card');
   if (!card) return;
 
-  const urlEl = card.querySelector('[data-url]');
+  const urlEl = card.querySelector('a[href]');
   if (!urlEl) return;
+
+  let url = urlEl.href;
+  if (!url.startsWith('http')) url = 'https://' + url;
+
+  foxIframe.src = url;
+  foxOverlay.style.display = 'flex';
+  foxUrlText.textContent = url;
 
   e.preventDefault();
   e.stopPropagation();
-
-  let url = urlEl.getAttribute('data-url');
-  if (!url) return;
-  if (!url.startsWith('http')) url = 'https://' + url;
-
-  document.getElementById('foxIframe').src = url;
-  document.getElementById('foxUrlText').textContent = url;
-  document.getElementById('foxIframeOverlay').classList.add('active');
 });
 
-// Zamknij
-document.getElementById('foxClose')?.addEventListener('click', () => {
-  document.getElementById('foxIframeOverlay').classList.remove('active');
-  setTimeout(() => {
-    document.getElementById('foxIframe').src = 'about:blank';
-    document.getElementById('foxUrlText').textContent = 'FoxCorp • Przeglądanie';
-  }, 400);
+// ZAMKNIJ OVERLAY
+const closeFox = () => {
+  foxOverlay.style.display = 'none';
+  foxIframe.src = 'about:blank';
+  foxUrlText.textContent = 'FoxCorp • Przeglądanie';
+};
+
+document.getElementById('foxClose')?.addEventListener('click', closeFox);
+document.addEventListener('keydown', e => {
+  if ((e.key === 'Escape' || e.key === 'Backspace') && foxOverlay.style.display === 'flex') closeFox();
+});
+window.addEventListener('popstate', () => {
+  if (foxOverlay.style.display === 'flex') closeFox();
 });

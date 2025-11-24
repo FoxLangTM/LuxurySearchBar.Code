@@ -91,7 +91,7 @@ function resolveDuckHref(href) {
 // ======= Fetch DuckDuckGo results =======
 async function fetchResultsDDG(query, page = 0, perPage = 8) {
   const start = page * perPage;
-  const target = `https://duckduckgo.com/html/?q=\( {encodeURIComponent(query)}&s= \){start}`;
+  const target = `https://duckduckgo.com/html/?q=${encodeURIComponent(query)}&s=${start}`;
   const text = await fetchWithProxyText(target);
   if (!text) return [];
 
@@ -125,7 +125,9 @@ function buildCardHTML(r) {
         <p class="results-res-text">${escapeHtml(r.snippet)}</p>
         <img src="${escapeHtml(r.image)}" class="results-res-mini" loading="lazy"/>
       </div>
-      <a href="\( {escapeHtml(r.link)}" target="_blank" rel="noopener"> \){escapeHtml(r.displayLink)}</a>
+      <button class="fox-open-btn" data-url="${escapeHtml(r.link)}">
+        ${escapeHtml(r.displayLink)}
+      </button>
     </div>
   `;
 }
@@ -236,12 +238,12 @@ document.addEventListener("DOMContentLoaded", setupTrigger);
 // ======= Suggestions =======
 async function fetchSuggestions(q){
   if(!q) return [];
-  const target=`https://suggestqueries.google.com/complete/search?client=firefox&hl=\( {lang}&q= \){encodeURIComponent(q)}`;
+  const target=`https://suggestqueries.google.com/complete/search?client=firefox&hl=${lang}&q=${encodeURIComponent(q)}`;
   for(const proxy of proxies){
     try{
       const res=await fetch(proxy+encodeURIComponent(target),{cache:"no-store"});
       if(!res||!res.ok) continue;
-      const txt = await res.text();
+      const txt=await res.text();
       const parsed=JSON.parse(txt);
       if(Array.isArray(parsed[1])) return parsed[1];
     }catch{}
@@ -512,7 +514,7 @@ assistantObserver.observe(document.body,{childList:true,subtree:true});
 // ======= Assistant translation / language =======
 const assistantUserLang=(navigator.languages?.[0]||navigator.language||"en").split("-")[0];
 async function detectLanguage(text){ try{const proxy=proxies[Math.floor(Math.random()*proxies.length)]; const url=proxy+encodeURIComponent(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=|en`); const res=await fetch(url); if(!res||!res.ok)return assistantUserLang; const data=await res.json(); return data?.responseData?.detectedLanguage||assistantUserLang;}catch{return assistantUserLang;} }
-async function fetchTranslation(text,fromLang){ try{ const proxy=proxies[Math.floor(Math.random()*proxies.length)]; const url=`https://api.mymemory.translated.net/get?q=\( {encodeURIComponent(text)}&langpair= \){fromLang}|${assistantUserLang}`; const res=await fetch(proxy+encodeURIComponent(url)); if(!res||!res.ok) return "📍 Serwer niedostępny."; const data=await res.json(); return data?.responseData?.translatedText||"Brak odpowiedzi"; }catch{return "📍 Serwer niedostępny.";}}
+async function fetchTranslation(text,fromLang){ try{ const proxy=proxies[Math.floor(Math.random()*proxies.length)]; const url=`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${fromLang}|${assistantUserLang}`; const res=await fetch(proxy+encodeURIComponent(url)); if(!res||!res.ok) return "📍 Serwer niedostępny."; const data=await res.json(); return data?.responseData?.translatedText||"Brak odpowiedzi"; }catch{return "📍 Serwer niedostępny.";}}
 async function fetchGroqAnswer(prompt){ return `📌 (Podsumowanie tymczasowe) ${prompt.slice(0,120)}...`;}
 
 // ======= Init DOMContentLoaded =======
@@ -520,7 +522,6 @@ document.addEventListener("DOMContentLoaded", () => {
   ensureResultsRoot();
   setupTrigger();
 });
-
 
 function createPerfControl(dotId) {
   let level = 1;
@@ -543,12 +544,12 @@ function createPerfControl(dotId) {
   function getColorAt(percent) {
     const x = Math.floor((percent / 100) * (canvas.width - 1));
     const [r, g, b] = ctx.getImageData(x, 0, 1, 1).data;
-    return `rgb(\( {r}, \){g}, ${b})`;
+    return `rgb(${r}, ${g}, ${b})`;
   }
 
   function darkenColor(color, factor = 0.7) {
     const [_, r, g, b] = color.match(/rgb\((\d+), (\d+), (\d+)\)/);
-    return `rgba(\( {Math.floor(r * factor)}, \){Math.floor(g * factor)}, ${Math.floor(b * factor)}, 0.8)`;
+    return `rgba(${Math.floor(r * factor)}, ${Math.floor(g * factor)}, ${Math.floor(b * factor)}, 0.8)`;
   }
 
   function startDrag(e) {
@@ -795,42 +796,111 @@ function initWebGLNeonBackground() {
 }
 
 const perfRange = document.getElementById('perfRange3');
+const perfWrapper = document.querySelector('.performance-range-wrapper');
 
-// Na load, odczytaj z localStorage (z fallbackiem na sessionStorage)
-let savedValue;
-try {
-  savedValue = localStorage.getItem('perfValue') || sessionStorage.getItem('perfValue') || '0';
-} catch (err) {
-  console.warn('Błąd localStorage:', err); // Szczery log dla debugu
-  savedValue = '0'; // Fallback na default
+// Wrapper dla IndexedDB (z fallback na sessionStorage)
+const DB_NAME = 'FoxCorpDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'perfStore';
+const KEY = 'perfValue';
+
+async function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+  });
 }
-perfRange.value = savedValue;
-applyOptimizations(snapValue(savedValue)); // Snap na starcie dla spójności
 
-// Na input: zapis dynamiczny ze snapem (unikamy śmieciowych wartości)
-perfRange?.addEventListener('input', (e) => {
-  const snapped = snapValue(e.target.value);
+async function getValue() {
   try {
-    localStorage.setItem('perfValue', snapped);
-    sessionStorage.setItem('perfValue', snapped); // Backup
-  } catch (err) {
-    console.warn('Nie udało się zapisać w storage:', err);
+    const db = await openDB();
+    return new Promise((resolve) => {
+      const transaction = db.transaction(STORE_NAME, 'readonly');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.get(KEY);
+      request.onsuccess = () => resolve(request.result || '0');
+      request.onerror = () => resolve('0');
+    });
+  } catch {
+    console.warn('Błąd IndexedDB, fallback na sessionStorage');
+    return sessionStorage.getItem(KEY) || '0';
   }
+}
+
+async function setValue(value) {
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.put(value, KEY);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+      transaction.oncomplete = () => {
+        if (navigator.storage && navigator.storage.persist) {
+          navigator.storage.persist().then(granted => {
+            if (granted) console.log('Persistent storage granted');
+          });
+        }
+      };
+    });
+  } catch (err) {
+    console.warn('Nie udało się zapisać w IndexedDB:', err);
+    sessionStorage.setItem(KEY, value); // Backup
+  }
+}
+
+// Funkcja do obliczania procentowej pozycji dot'a (thumb) względem wrappera linii
+function getDotPercent() {
+  if (!perfRange || !perfWrapper) return 0;
+  const rect = perfWrapper.getBoundingClientRect();
+  const thumbRect = perfRange.getBoundingClientRect(); // Przybliżenie pozycji thumb'a
+  const percent = ((thumbRect.left - rect.left + thumbRect.width / 2) / rect.width) * 100;
+  return Math.max(0, Math.min(100, percent));
+}
+
+// Funkcja snapująca na podstawie pozycji (dla apply)
+function snapValue(percent) {
+  if (percent < 25) return 0;
+  else if (percent <= 75) return 50;
+  else return 100;
+}
+
+// Na load: Odczytaj, ustaw value na raw, apply na snapowanej pozycji
+(async () => {
+  let savedValue = await getValue();
+  perfRange.value = savedValue; // Raw value dla pozycji
+  const percent = getDotPercent(); // Oblicz aktualną pozycję
+  applyOptimizations(snapValue(percent));
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist().then(granted => {
+      if (granted) console.log('Persistent storage granted');
+    });
+  }
+})();
+
+// Na input: Zapis raw value, ale apply na bieżącej pozycji dot'a
+perfRange?.addEventListener('input', async (e) => {
+  await setValue(e.target.value); // Zapisz raw
+  const percent = getDotPercent(); // Mierz pozycję dot'a
+  applyOptimizations(snapValue(percent)); // Apply tryb
 });
 
-// Na change: finalny snap i apply (jak miałeś)
-perfRange?.addEventListener('change', (e) => {
-  const snapped = snapValue(e.target.value);
-  e.target.value = snapped;
-  try {
-    localStorage.setItem('perfValue', snapped);
-    sessionStorage.setItem('perfValue', snapped);
-  } catch (err) {
-    console.warn('Nie udało się zapisać w storage:', err);
-  }
-  applyOptimizations(snapped);
+// Na change: To samo, finalny zapis i apply
+perfRange?.addEventListener('change', async (e) => {
+  await setValue(e.target.value);
+  const percent = getDotPercent();
+  applyOptimizations(snapValue(percent));
 
-  // Update gradient (jak miałeś, bez zmian)
+  // Update gradient na podstawie snap
+  const snapped = snapValue(percent);
   const colors = {
     0: "linear-gradient(90deg, #ff3333, #ff5555)",
     50: "linear-gradient(90deg, #ffaa33, #ffdd33)",
@@ -839,23 +909,14 @@ perfRange?.addEventListener('change', (e) => {
   e.target.style.background = colors[snapped] || colors[0];
 });
 
-// Automatyczny zapis na wyjście/minimize (dla mobile/PWA)
-window.addEventListener('beforeunload', () => {
-  const currentValue = snapValue(perfRange.value);
-  try {
-    localStorage.setItem('perfValue', currentValue);
-    sessionStorage.setItem('perfValue', currentValue);
-  } catch {} // Cichy, bo unload może być szybki
+// Automatyczny zapis raw na wyjście
+window.addEventListener('beforeunload', async () => {
+  await setValue(perfRange.value);
 });
 
-// Dla visibility change (np. app w tle na mobile)
-document.addEventListener('visibilitychange', () => {
+document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState === 'hidden') {
-    const currentValue = snapValue(perfRange.value);
-    try {
-      localStorage.setItem('perfValue', currentValue);
-      sessionStorage.setItem('perfValue', currentValue);
-    } catch {}
+    await setValue(perfRange.value);
   }
 });
 
@@ -870,191 +931,10 @@ function updateCategory(index) {
   if (layer) layer.style.display = "flex";
 }
 
-
-function applyOptimizations(level) {
-  const body = document.body;
-  body.classList.remove('max-power', 'balanced', 'optimized'); // Czyszczenie klas
-
-  if (level == 0) { // Low end: max moc, daje wszystko
-    body.classList.add('max-power');
-    // CSS dla .max-power: transform: scale(1); filter: none; /* Pełne animacje plus neon-metal gradient */
-    // Plus kreatywny add-on: init webGL neon-metal background dla dostojnego efektu
-    initWebGLNeonBackground();
-    // Brak optymalizacji – pełna moc
-    body.style.overflow = ''; // Reset rozciągnięcia
-  } else if (level == 50) { // Half end: zrównoważona, średnia
-    body.classList.add('balanced');
-    // CSS dla .balanced: transform: scale(0.95); filter: grayscale(0.1); /* Lekka równowaga */
-    body.style.overflow = ''; // Reset
-  } else { // 100 full end: optymalizacja, oszczędności
-    body.classList.add('optimized');
-    body.style.animation = 'none'; // Bezpośrednia blokada animacji dla body
-    // CSS dla .optimized: transform: scale(0.3); filter: grayscale(0.5) blur(1px); transition: none; /* Dodatkowa blokada, mocniejsze zmniejszenie pikseli */
-    // Skracanie nie używanych skryptów: clear non-essential timeouts/intervals
-    if (debounceTimer) clearTimeout(debounceTimer); // Przykładowo, skracanie debounce
-    // Opcjonalnie: if (someAnimInterval) clearInterval(someAnimInterval); // Dodaj dla swoich loopów
-    // Symulacja zmiany res: scale dla "mniej pikseli" (jak 980x520) + overflow hidden dla rozciągnięcia
-    body.style.overflow = 'hidden';
-  }
-}
-
-function initWebGLNeonBackground() {
-  // Kreatywny add-on: webGL canvas z metaliczno-neonowym gradientem (srebrno-błękitny puls z ciemniejszym halo)
-  const canvas = document.createElement('canvas');
-  canvas.style.position = 'fixed';
-  canvas.style.top = '0';
-  canvas.style.left = '0';
-  canvas.style.width = '100%';
-  canvas.style.height = '100%';
-  canvas.style.zIndex = '-1';
-  canvas.style.pointerEvents = 'none'; // Nie blokuje interakcji
-  document.body.appendChild(canvas);
-
-  const gl = canvas.getContext('webgl');
-  if (!gl) return; // Fallback if no webGL
-
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  const vsSource = `
-    attribute vec4 aPosition;
-    void main() {
-      gl_Position = aPosition;
-    }
-  `;
-  const fsSource = `
-    precision mediump float;
-    uniform vec2 uResolution;
-    uniform float uTime;
-    void main() {
-      vec2 uv = gl_FragCoord.xy / uResolution;
-      vec3 color = mix(vec3(0.66,0.66,0.66), vec3(0.0,0.66,1.0), uv.x + sin(uTime * 0.5) * 0.1); // Srebrno-błękitny neon puls
-      color *= 0.8 + 0.2 * sin(uv.y * 10.0 + uTime); // Dostojny metaliczny wzór
-      vec3 darkHalo = color * 0.7; // Ciemniejszy dla głębi halo
-      gl_FragColor = vec4(mix(color, darkHalo, 0.3), 1.0); // Mieszanka z ciemniejszym halo
-    }
-  `;
-
-  const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
-  gl.useProgram(shaderProgram);
-
-  const positionBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  const positions = [-1.0, 1.0, 1.0, 1.0, -1.0, -1.0, 1.0, -1.0];
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-
-  const positionLocation = gl.getAttribLocation(shaderProgram, 'aPosition');
-  gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(positionLocation);
-
-  const resolutionLocation = gl.getUniformLocation(shaderProgram, 'uResolution');
-  const timeLocation = gl.getUniformLocation(shaderProgram, 'uTime');
-
-  function render() {
-    gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
-    gl.uniform1f(timeLocation, performance.now() / 1000);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    requestAnimationFrame(render);
-  }
-  render();
-
-  function initShaderProgram(gl, vsSource, fsSource) {
-    const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
-    const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
-    const shaderProgram = gl.createProgram();
-    gl.attachShader(shaderProgram, vertexShader);
-    gl.attachShader(shaderProgram, fragmentShader);
-    gl.linkProgram(shaderProgram);
-    return shaderProgram;
-  }
-
-  function loadShader(gl, type, source) {
-    const shader = gl.createShader(type);
-    gl.shaderSource(shader, source);
-    gl.compileShader(shader);
-    return shader;
-  }
-}
-
-const perfRange = document.getElementById('perfRange3');
-
-// Na load, odczytaj z localStorage (z fallbackiem na sessionStorage)
-let savedValue;
-try {
-  savedValue = localStorage.getItem('perfValue') || sessionStorage.getItem('perfValue') || '0';
-} catch (err) {
-  console.warn('Błąd localStorage:', err); // Szczery log dla debugu
-  savedValue = '0'; // Fallback na default
-}
-perfRange.value = savedValue;
-applyOptimizations(snapValue(savedValue)); // Snap na starcie dla spójności
-
-// Na input: zapis dynamiczny ze snapem (unikamy śmieciowych wartości)
-perfRange?.addEventListener('input', (e) => {
-  const snapped = snapValue(e.target.value);
-  try {
-    localStorage.setItem('perfValue', snapped);
-    sessionStorage.setItem('perfValue', snapped); // Backup
-  } catch (err) {
-    console.warn('Nie udało się zapisać w storage:', err);
-  }
-});
-
-// Na change: finalny snap i apply (jak miałeś)
-perfRange?.addEventListener('change', (e) => {
-  const snapped = snapValue(e.target.value);
-  e.target.value = snapped;
-  try {
-    localStorage.setItem('perfValue', snapped);
-    sessionStorage.setItem('perfValue', snapped);
-  } catch (err) {
-    console.warn('Nie udało się zapisać w storage:', err);
-  }
-  applyOptimizations(snapped);
-
-  // Update gradient (jak miałeś, bez zmian)
-  const colors = {
-    0: "linear-gradient(90deg, #ff3333, #ff5555)",
-    50: "linear-gradient(90deg, #ffaa33, #ffdd33)",
-    100: "linear-gradient(90deg, #33ff66, #66ffaa)"
-  };
-  e.target.style.background = colors[snapped] || colors[0];
-});
-
-// Automatyczny zapis na wyjście/minimize (dla mobile/PWA)
-window.addEventListener('beforeunload', () => {
-  const currentValue = snapValue(perfRange.value);
-  try {
-    localStorage.setItem('perfValue', currentValue);
-    sessionStorage.setItem('perfValue', currentValue);
-  } catch {} // Cichy, bo unload może być szybki
-});
-
-// Dla visibility change (np. app w tle na mobile)
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') {
-    const currentValue = snapValue(perfRange.value);
-    try {
-      localStorage.setItem('perfValue', currentValue);
-      sessionStorage.setItem('perfValue', currentValue);
-    } catch {}
-  }
-});
-
-
-// --- Tworzenie trzech kontrolerów ---
-const wydajność3 = createPerfControl("perfDot3");
-
-// --- Pokazywanie odpowiedniego layera przy zmianie kategorii ---
-function updateCategory(index) {
-  document.querySelectorAll(".performance-control").forEach(el => el.style.display = "none");
-  const layer = document.getElementById(`variation_layer${index + 1}`);
-  if (layer) layer.style.display = "flex";
-}
 
 
 // ================================================================
-// FOXCORP – OSTATECZNA NAKŁADKA IFRAME – DZIAŁA PO KLIKNIĘCIU W WYNIK
+// FOXCORP – NAKŁADKA IFRAME – DZIAŁA PO KLIKNIĘCIU W WYNIK
 // ================================================================
 
 // Elementy z HTML
@@ -1063,7 +943,7 @@ const foxOverlay = document.getElementById('foxIframeOverlay');
 const foxUrlText = document.getElementById('foxUrlText');
 
 // KLIKNIĘCIE W WYNIK – ZMIENIA SRC I POKAZUJE OVERLAY
-document.body.addEventListener('click', e => {
+document.addEventListener('click', e => {
   const card = e.target.closest('.results-res-card');
   if (!card) return;
 
@@ -1074,13 +954,12 @@ document.body.addEventListener('click', e => {
   if (!url.startsWith('http')) url = 'https://' + url;
 
   foxIframe.src = url;
-  foxOverlay.style.display = 'flex';
-  foxIframe.style.display = 'flex';
+  foxOverlay.style.display = 'block';
+  foxIframe.style.display = 'block';
   foxUrlText.textContent = url;
 
   e.preventDefault();
   e.stopPropagation();
-  return false;
 });
 
 // ZAMKNIJ OVERLAY
@@ -1093,8 +972,8 @@ const closeFox = () => {
 
 document.getElementById('foxClose')?.addEventListener('click', closeFox);
 document.addEventListener('keydown', e => {
-  if ((e.key === 'Escape' || e.key === 'Backspace') && foxOverlay.style.display === 'flex') closeFox();
+  if ((e.key === 'Escape' || e.key === 'Backspace') && foxOverlay.style.display === 'block') closeFox();
 });
 window.addEventListener('popstate', () => {
-  if (foxOverlay.style.display === 'flex') closeFox();
+  if (foxOverlay.style.display === 'block') closeFox();
 });

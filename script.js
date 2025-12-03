@@ -128,11 +128,11 @@ function buildCardHTML(r) {
   `;
 }
 
-const resultCard = document.createElement("div");
-resultCard.className = "results-res-card";
-resultCard.dataset.url = r.link;
-resultCard.innerHTML = buildCardHTML(r);
-resultsGrid.appendChild(resultCard);
+const resCardElem = document.createElement("div");
+resCardElem.className = "results-res-card";
+resCardElem.dataset.url = r.link;
+resCardElem.innerHTML = buildCardHTML(r);
+resultsGrid.appendChild(resCardElem);
 
 // ======= Show search results =======
 async function showSearchResults(query, reset=false) {
@@ -938,10 +938,10 @@ function updateCategory(index) {
 
 
 document.addEventListener("click", (e) => {
-  const resultCard = e.target.closest(".results-res-card");
-  if (!resultCard) return;
+  const resCardElem = e.target.closest(".results-res-card");
+  if (!resCardElem) return;
 
-  const url = resultCard.dataset.url;
+  const url = resCardElem.dataset.url;
   if (!url) return;
 
   const iframe = document.getElementById("previewFrame");

@@ -14,9 +14,24 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
-
 <body>
 
+
+<div id="iframed" class="iframed">
+<iframe class="iframe" id="foxIframeOverlay"
+        src="${escapeHtml(r.link)}" 
+        title="FoxFrame"
+        loading="lazy"
+        style="background-color: #f9f9f9;"
+        sandbox="allow-scripts allow-same-origin"
+        referrerpolicy="no-referrer">
+ </iframe>
+         <div class="iframe-kill"></div>
+         <div class="iframe-resize"></div>
+         <div class="iframe-minimize"></div>
+ </div>
+         
+    
 <h1 class="visually-hidden" hidden>FoxCorp • Your own browser</h1>
 
   <!-- Search button -->
@@ -35,12 +50,11 @@
       <h2 id="queryTitle"></h2>  
     </div>  
     <div class="results-container">  
-      <div class="results-grid"></div>  
+      <div onclick="showiframe()" class="results-grid"></div>  
     </div>  <!-- Trigger po lewej -->  
 <div class="scroll-trigger">  
   <div class="trigger-dot"></div>  
 </div>
-
 
   </div>    <div class="settings-overlay" id="settingsOverlay">  
     <div class="settings-panel">  
@@ -75,6 +89,14 @@
 </div>  
     </div>  
   </div>
+  
+  <div id="foxIframeOverlay" hidden>
+  <div class="fox-header">
+    <button id="foxClose">✕</button>
+    <div id="foxUrlText">FoxCorp • Przeglądanie</div>
+  </div>
+  <iframe id="foxIframe" src="" hidden sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-downloads allow-top-navigation-by-user-activation"></iframe>
+</div>
 
       <!-- Dock -->    
       <div class="settings-dock">  
@@ -88,8 +110,6 @@
       <div class="menu-item">➤</div>  
     </div>  
   </div>
-
-<iframe id="previewFrame" style="width:100%; height:100vh; display:none; border:0;"></iframe>
 
       <script src="script.js" defer></script>
         </body>  

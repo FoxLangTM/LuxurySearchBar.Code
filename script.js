@@ -49,6 +49,7 @@ function ensureResultsRoot() {
     root.innerHTML = `
       <div class="results-header"><h2 id="queryTitle"></h2></div>
       <div class="results-container">
+      <div class="assistantBtn"</div>
         <div class="results-grid"></div>
       </div>
       <div class="scroll-trigger">
@@ -115,6 +116,7 @@ async function fetchResultsDDG(query, page = 0, perPage = 8) {
   } catch { return []; }
 }
 
+// ======= Build card HTML =======
 function buildCardHTML(r) {
   return `
     <img src="${escapeHtml(r.image)}" class="results-res-thumb" loading="lazy"/>
@@ -124,15 +126,12 @@ function buildCardHTML(r) {
         <p class="results-res-text">${escapeHtml(r.snippet)}</p>
         <img src="${escapeHtml(r.image)}" class="results-res-mini" loading="lazy"/>
       </div>
+      <button onclick="showiframe()" class="fox-open-btn" data-url="${escapeHtml(r.link)}">
+        ${escapeHtml(r.displayLink)}
+      </button>
     </div>
   `;
 }
-
-const resCardElem = document.createElement("div");
-resCardElem.className = "results-res-card";
-resCardElem.dataset.url = r.link;
-resCardElem.innerHTML = buildCardHTML(r);
-resultsGrid.appendChild(resCardElem);
 
 // ======= Show search results =======
 async function showSearchResults(query, reset=false) {
@@ -666,8 +665,6 @@ function createPerfControl(dotId) {
 
 // === Zamykaj wyszukiwarkę i dock menu po kliknięciu poza nimi ===
 document.addEventListener("click", (e) => {
-if (e.target.closest('.results-res-card')) return;
-
   const overlay = document.getElementById("overlay");
   const searchMenu = document.querySelector(".search-menu");
   const dockMenu = document.getElementById("dockMenu"); // masz taki id
@@ -936,16 +933,12 @@ function updateCategory(index) {
 }
 
 
-
-document.addEventListener("click", (e) => {
-  const resCardElem = e.target.closest(".results-res-card");
-  if (!resCardElem) return;
-
-  const url = resCardElem.dataset.url;
-  if (!url) return;
-
-  const iframe = document.getElementById("previewFrame");
-
-  iframe.src = url;
-  iframe.style.display = "block";
-});
+function showiframe() {
+    const showediframe = document.getElementById("iframed");
+    // Przełączanie widoczności
+    if (pole.style.display === "none" || pole.style.display === "") {
+        pole.style.display = "flex";
+    } else {
+        pole.style.display = "none";
+    }
+}

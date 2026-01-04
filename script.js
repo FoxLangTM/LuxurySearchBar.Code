@@ -939,40 +939,27 @@ async function showiframe(event) {
     let target = event.currentTarget || event.target;
     if (!target.getAttribute("data-url")) target = target.closest('[data-url]');
     
-    const url = target.getAttribute("data-url");
+    let url = target.getAttribute("data-url");
 
     if (url) {
         document.body.style.overflow = "hidden";
         container.classList.remove("hidden", "minimized", "compact");
         container.style.display = "flex";
 
-        // 1. Ekran ładowania
-        iframe.srcdoc = "<style>body{background:#111;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;} @keyframes s{to{transform:rotate(360deg)}} .l{border:3px solid #333;border-top:3px solid #22CB41;border-radius:50%;width:30px;height:30px;animation:s 1s linear infinite;}</style><div class='l'></div>";
+        // 1. Ekran ładowania (żeby użytkownik wiedział, że FoxCorp pracuje)
+        iframe.removeAttribute("srcdoc");
+        iframe.src = "about:blank"; 
 
-        try {
-            // 2. Pobieramy kod strony przez proxy
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-            const response = await fetch(proxyUrl);
-            let html = await response.text();
+        // 2. TUNEL "TOTALNY"
+        // Używamy Google Translate jako darmowego proxy. 
+        // Google renderuje stronę u siebie, usuwa blokady X-Frame i przesyła gotowy obraz do Ciebie.
+        // Parametry: sl=auto (wykryj język), tl=pl (tłumacz na polski - to wymusza tunelowanie), u=URL
+        const totalTunnel = `https://translate.google.com/translate?sl=auto&tl=pl&u=${encodeURIComponent(url)}`;
 
-            // 3. Naprawiamy bazę linków (żeby obrazki i style nie były "puste")
-            const urlObj = new URL(url);
-            const baseUrl = urlObj.origin;
-            
-            // Wstrzykujemy tag <base> na sam początek <head>
-            const repairedHtml = html.replace(/<head>/i, `<head><base href="${baseUrl}/">`);
+        // 3. Wstrzykujemy tunel do iframe
+        iframe.src = totalTunnel;
 
-            // 4. KLUCZ: Wstrzykujemy naprawiony kod jako srcdoc (to zamieni kod na witrynę)
-            iframe.srcdoc = repairedHtml;
-            
-            console.log("FoxFrame: Witryna wyrenderowana pomyślnie");
-
-        } catch (err) {
-            console.error("Błąd renderowania:", err);
-            // Fallback do zwykłego src jeśli proxy padnie
-            iframe.removeAttribute("srcdoc");
-            iframe.src = url;
-        }
+        console.log("FoxFrame: Uruchomiono tunel totalny dla " + url);
     }
 }
 

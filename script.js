@@ -124,12 +124,10 @@ function buildCardHTML(r) {
       <h3>${escapeHtml(r.title)}</h3>
       <div class="results-res-desc">
         <p class="results-res-text">${escapeHtml(r.snippet)}</p>
-        <img src="${escapeHtml(r.image)}" class="results-res-mini" loading="lazy"/>
-      </div>
-      <button onclick="showiframe()" class="fox-open-btn" data-url="${escapeHtml(r.link)}">
-        ${escapeHtml(r.displayLink)}
-      </button>
-    </div>
+        <img src="${escapeHtml(r.image)}" class="results-res-mini" loading="lazy"/></img>
+        </div>
+<button onclick="showiframe(event)" class="fox-open-btn" data-url="${escapeHtml(r.link)}"></button>
+</div>
   `;
 }
 
@@ -933,12 +931,24 @@ function updateCategory(index) {
 }
 
 
-function showiframe() {
-    const showediframe = document.getElementById("iframed");
-    // Przełączanie widoczności
-    if (pole.style.display === "none" || pole.style.display === "") {
-        pole.style.display = "flex";
-    } else {
-        pole.style.display = "none";
+function showiframe(event) {
+    const container = document.getElementById("iframed");
+    const iframe = container.querySelector("iframe");
+    
+    // Pobieramy URL z atrybutu data-url przycisku, który został kliknięty
+    const url = event.currentTarget.getAttribute("data-url");
+    
+    if (url) {
+        iframe.src = url;
+        container.style.display = "block"; // Pokazujemy kontener
+        iframe.style.display = "block";    // Pokazujemy sam iframe
     }
 }
+
+// Obsługa przycisków kontrolnych iframe (Kill / Zamknij)
+document.querySelector('.iframe-kill')?.addEventListener('click', () => {
+    const container = document.getElementById("iframed");
+    const iframe = container.querySelector("iframe");
+    container.style.display = "none";
+    iframe.src = ""; // Czyścimy src, żeby zatrzymać dźwięki/ładowanie w tle
+});

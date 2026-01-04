@@ -933,35 +933,37 @@ function updateCategory(index) {
 
 
 
-async function showiframe(event) {
-    const container = document.getElementById("iframed");
-    const iframe = container.querySelector("iframe");
+let foxWindow = null;
+
+function showiframe(event) {
     let target = event.currentTarget || event.target;
     if (!target.getAttribute("data-url")) target = target.closest('[data-url]');
-    
-    let url = target.getAttribute("data-url");
+    const url = target.getAttribute("data-url");
 
     if (url) {
-        document.body.style.overflow = "hidden";
-        container.classList.remove("hidden", "minimized", "compact");
-        container.style.display = "flex";
+        // Obliczamy środek ekranu
+        const width = window.innerWidth * 0.8;
+        const height = window.innerHeight * 0.8;
+        const left = (window.innerWidth - width) / 2;
+        const top = (window.innerHeight - height) / 2;
 
-        // 1. Ekran ładowania (żeby użytkownik wiedział, że FoxCorp pracuje)
-        iframe.removeAttribute("srcdoc");
-        iframe.src = "about:blank"; 
-
-        // 2. TUNEL "TOTALNY"
-        // Używamy Google Translate jako darmowego proxy. 
-        // Google renderuje stronę u siebie, usuwa blokady X-Frame i przesyła gotowy obraz do Ciebie.
-        // Parametry: sl=auto (wykryj język), tl=pl (tłumacz na polski - to wymusza tunelowanie), u=URL
-        const totalTunnel = `https://translate.google.com/translate?sl=auto&tl=pl&u=${encodeURIComponent(url)}`;
-
-        // 3. Wstrzykujemy tunel do iframe
-        iframe.src = totalTunnel;
-
-        console.log("FoxFrame: Uruchomiono tunel totalny dla " + url);
+        // Jeśli okno już istnieje, tylko zmieniamy URL
+        if (foxWindow && !foxWindow.closed) {
+            foxWindow.location.href = url;
+            foxWindow.focus();
+        } else {
+            // Otwieramy nowe, stylowe okno bez pasków narzędzi (wygląda jak aplikacja)
+            foxWindow = window.open(
+                url, 
+                "FoxCorpBrowser", 
+                `width=${width},height=${height},top=${top},left=${left},menubar=no,toolbar=no,location=no,status=no,resizable=yes`
+            );
+        }
+        
+        console.log("FoxCorp: Uruchomiono Shadow Window dla " + url);
     }
 }
+
 
 
 

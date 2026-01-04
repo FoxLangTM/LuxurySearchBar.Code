@@ -933,34 +933,47 @@ function updateCategory(index) {
 
 
 
-// Używamy nazwy bez window na początku, tak jak miałeś wcześniej, 
-// ale przypiszemy ją do window wewnątrz, żeby była pancerna.
-function showiframe(event) {
+async function showiframe(event) {
     const container = document.getElementById("iframed");
     const iframe = container.querySelector("iframe");
-    
-    // Szukamy przycisku lub linku z URL
     let target = event.currentTarget || event.target;
-    if (!target.getAttribute("data-url")) {
-        target = target.closest('[data-url]');
-    }
+    if (!target.getAttribute("data-url")) target = target.closest('[data-url]');
     
     const url = target.getAttribute("data-url");
-    
+
     if (url) {
-        // 1. Blokujemy scrollowanie tła, żeby wyniki pod spodem nie uciekały
-        document.body.style.overflow = "hidden"; 
-        
-        // 2. Czyścimy stare klasy (żeby okno zawsze otwierało się na full)
+        document.body.style.overflow = "hidden";
         container.classList.remove("hidden", "minimized", "compact");
-        
-        // 3. Ładujemy URL i pokazujemy okno
-        iframe.src = url;
         container.style.display = "flex";
-        console.log("FoxFrame: Loaded " + url);
+
+        // Ustawiamy ekran ładowania/tekst pomocniczy
+        iframe.srcdoc = "<html><body style='background:#111;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;'>🚀 FoxCorp Tunnel: Ładowanie bezpiecznego połączenia...</body></html>";
+
+        try {
+            // Używamy darmowego proxy AllOrigins, aby pobrać treść strony
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+            
+            const response = await fetch(proxyUrl);
+            let html = await response.text();
+
+            // KLUCZOWY MOMENT: Naprawiamy linki w pobranym HTML
+            // Przekształcamy relatywne ścieżki (np. /style.css) na absolutne (np. https://strona.pl/style.css)
+            const base = url.split('/').slice(0, 3).join('/');
+            html = html.replace(/(src|href)="\//g, `$1="${base}/`);
+
+            // Wstrzykujemy zmodyfikowany kod bezpośrednio do iframe
+            iframe.srcdoc = html;
+            
+            console.log("FoxFrame: Strona załadowana przez tunel.");
+        } catch (err) {
+            console.error("Błąd tunelu:", err);
+            // Fallback: Jeśli proxy zawiedzie, spróbujmy załadować klasycznie
+            iframe.src = url;
+        }
     }
 }
-window.showiframe = showiframe;
+
+
 
 function hideIframe() {
     const container = document.getElementById("iframed");

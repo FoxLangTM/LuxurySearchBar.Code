@@ -17,19 +17,15 @@
 <body>
 
 
-<div id="iframed" class="iframed">
-<iframe class="iframe" id="foxIframeOverlay"
-        src="${escapeHtml(r.link)}" 
-        title="FoxFrame"
-        loading="lazy"
-        style="background-color: #f9f9f9;"
-        sandbox="allow-scripts allow-same-origin"
-        referrerpolicy="no-referrer">
- </iframe>
-         <div class="iframe-kill"></div>
-         <div class="iframe-resize"></div>
-         <div class="iframe-minimize"></div>
- </div>
+<div id="iframed" class="iframed hidden">
+    <div class="iframe-controls">
+        <div class="iframe-kill" onclick="hideIframe()"></div>
+        <div class="iframe-resize" onclick="toggleResize()"></div>
+        <div class="iframe-minimize" onclick="toggleMinimize()"></div>
+    </div>
+    <iframe class="iframe" src="" title="FoxFrame" sandbox="allow-scripts allow-same-origin" referrerpolicy="no-referrer"></iframe>
+</div>
+
 
 
 <h1 class="visually-hidden" hidden>FoxCorp • Your own browser</h1>
@@ -89,14 +85,7 @@
 </div>  
     </div>  
   </div>
-
-  <div id="foxIframeOverlay" hidden>
-  <div class="fox-header">
-    <button id="foxClose">✕</button>
-    <div id="foxUrlText">FoxCorp • Przeglądanie</div>
-  </div>
-  <iframe id="foxIframe" src="" hidden sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-downloads allow-top-navigation-by-user-activation"></iframe>
-</div>
+  
 
       <!-- Dock -->    
       <div class="settings-dock">  

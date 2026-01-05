@@ -933,54 +933,32 @@ function updateCategory(index) {
 
 
 
-async function showiframe(event) {
+function showiframe(event) {
     const container = document.getElementById("iframed");
     const iframe = container.querySelector("iframe");
+    
+    // Szukamy przycisku lub linku z URL
     let target = event.currentTarget || event.target;
-    if (!target.getAttribute("data-url")) target = target.closest('[data-url]');
+    if (!target.getAttribute("data-url")) {
+        target = target.closest('[data-url]');
+    }
     
     const url = target.getAttribute("data-url");
-
+    
     if (url) {
-        document.body.style.overflow = "hidden";
+        // 1. Blokujemy scrollowanie tła, żeby wyniki pod spodem nie uciekały
+        document.body.style.overflow = "hidden"; 
+        
+        // 2. Czyścimy stare klasy (żeby okno zawsze otwierało się na full)
         container.classList.remove("hidden", "minimized", "compact");
+        
+        // 3. Ładujemy URL i pokazujemy okno
+        iframe.src = url;
         container.style.display = "flex";
-
-        // Dodajemy sandbox, który pozwala na skrypty i formularze, ale chroni przed ucieczką
-        iframe.setAttribute("sandbox", "allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-scripts allow-same-origin");
-
-        try {
-            // Pobieramy kod przez proxy
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-            const response = await fetch(proxyUrl);
-            let html = await response.text();
-
-            const urlObj = new URL(url);
-            const baseUrl = urlObj.origin;
-
-            // NAPRAWA STRONY: Wstrzykujemy tag <base> i naprawiamy linki
-            const repair = `
-                <head>
-                <base href="${baseUrl}/">
-                <meta charset="UTF-8">
-                <style>
-                    /* Naprawa problemów z przewijaniem wewnątrz ramki */
-                    body { overflow: auto !important; -webkit-overflow-scrolling: touch !important; }
-                </style>
-            `;
-            html = html.replace(/<head>/i, repair);
-
-            // Wstrzykujemy treść - to zadziała na większości stron
-            iframe.srcdoc = html;
-            
-            console.log("FoxFrame: Rendering " + url);
-        } catch (err) {
-            // Jeśli proxy zawiedzie (np. brak neta), próbujemy bezpośrednio
-            iframe.removeAttribute("srcdoc");
-            iframe.src = url;
-        }
+        console.log("FoxFrame: Loaded " + url);
     }
 }
+window.showiframe = showiframe;
 
 
 

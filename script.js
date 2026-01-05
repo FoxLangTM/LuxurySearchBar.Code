@@ -932,32 +932,29 @@ function updateCategory(index) {
 
 
 
-function showiframe(event) {
+async function showiframe(event) {
     const container = document.getElementById("iframed");
     const iframe = container.querySelector("iframe");
     
-    // Szukamy przycisku lub linku z URL
     let target = event.currentTarget || event.target;
-    if (!target.getAttribute("data-url")) {
-        target = target.closest('[data-url]');
-    }
-    
-    const url = target.getAttribute("data-url");
-    
+    if (!target.getAttribute("data-url")) target = target.closest('[data-url]');
+    let url = target.getAttribute("data-url");
+
     if (url) {
-        // 1. Blokujemy scrollowanie tła, żeby wyniki pod spodem nie uciekały
-        document.body.style.overflow = "hidden"; 
-        
-        // 2. Czyścimy stare klasy (żeby okno zawsze otwierało się na full)
-        container.classList.remove("hidden", "minimized", "compact");
-        
-        // 3. Ładujemy URL i pokazujemy okno
-        iframe.src = url;
+        document.body.style.overflow = "hidden";
+        container.classList.remove("hidden");
         container.style.display = "flex";
-        console.log("FoxFrame: Loaded " + url);
+
+        // TWOJE NOWE POŁĄCZENIE Z SILNIKIEM:
+        const engineBase = "https://foxcorp-engine.foxlang-team.workers.dev/?url=";
+        
+        // Łączymy: Silnik + Zakodowany adres docelowy
+        iframe.src = engineBase + encodeURIComponent(url);
+
+        console.log("FoxCorp Engine: Ładowanie " + url + " przez węzeł foxlang-team");
     }
 }
-window.showiframe = showiframe; dr
+
 
 
 

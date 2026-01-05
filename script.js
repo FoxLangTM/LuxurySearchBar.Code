@@ -932,7 +932,6 @@ function updateCategory(index) {
 
 
 
-
 function showiframe(event) {
     const container = document.getElementById("iframed");
     const iframe = container.querySelector("iframe");
@@ -958,7 +957,7 @@ function showiframe(event) {
         console.log("FoxFrame: Loaded " + url);
     }
 }
-window.showiframe = showiframe;
+window.showiframe = showiframe; dr
 
 
 

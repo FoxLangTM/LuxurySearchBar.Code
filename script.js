@@ -932,66 +932,61 @@ function updateCategory(index) {
 
 
 
-// Konfiguracja Twojego silnika
+
+// Konfiguracja Twojego silnika - upewnij się, że ten adres jest poprawny
 const FOX_ENGINE_URL = "https://foxcorp-engine.foxlang-team.workers.dev/?url=";
 
 /**
- * Główna funkcja otwierająca strony w systemie FoxCorp
+ * Główna funkcja wywoływana przez onclick="showiframe(event)"
  */
 async function showiframe(event) {
+    // Zapobiegamy domyślnemu działaniu (np. przeładowaniu strony)
+    if (event) event.preventDefault();
+
     const container = document.getElementById("iframed");
     const iframe = container.querySelector("iframe");
     
-    // Pobieranie URL z klikniętego elementu
+    // Pobieranie elementu, który został kliknięty
     let target = event.currentTarget || event.target;
-    if (!target.getAttribute("data-url")) target = target.closest('[data-url]');
+    
+    // Jeśli kliknięto w ikonę wewnątrz przycisku, szukamy nadrzędnego elementu z atrybutem
+    if (!target.getAttribute("data-url")) {
+        target = target.closest('[data-url]');
+    }
+    
     let url = target.getAttribute("data-url");
 
-    if (url) {
-        // 1. Wizualne przygotowanie interfejsu
-        document.body.style.overflow = "hidden"; // Blokada przewijania tła
-        container.classList.remove("hidden");
+    if (url && container && iframe) {
+        // 1. Płynne pokazanie okna FoxCorp
+        document.body.style.overflow = "hidden"; 
         container.style.display = "flex";
+        container.classList.remove("hidden");
 
-        // 2. Ładowanie przez silnik FoxCorp
-        // encodeURIComponent jest kluczowe, aby znaki specjalne w URL nie psuły zapytania
+        // 2. Przygotowanie URL dla Twojego silnika
+        // encodeURIComponent chroni przed błędami przy skomplikowanych linkach
         const finalUrl = FOX_ENGINE_URL + encodeURIComponent(url);
         
-        // Ustawiamy źródło ramki
+        // 3. Załadowanie strony do ramki
         iframe.src = finalUrl;
 
-        console.log("FoxCorp Browser: Ładowanie " + url);
-
-        // 3. Obsługa zdarzenia załadowania (opcjonalne)
-        iframe.onload = () => {
-            console.log("FoxCorp: Strona załadowana pomyślnie.");
-        };
+        console.log("FoxCorp Engine: Kierowanie do " + url);
+    } else {
+        console.error("FoxCorp Error: Nie znaleziono atrybutu data-url lub kontenera ramki.");
     }
 }
 
 /**
- * Funkcja zamykająca podgląd
+ * Funkcja zamykająca podgląd, dostępna dla onclick="closeFrame()"
  */
 function closeFrame() {
     const container = document.getElementById("iframed");
     const iframe = container.querySelector("iframe");
     
-    container.style.display = "none";
+    if (container) container.style.display = "none";
     document.body.style.overflow = "auto";
-    iframe.src = "about:blank"; // Czyścimy ramkę, by zatrzymać dźwięki/skrypty
+    
+    if (iframe) iframe.src = "about:blank"; // Zatrzymuje procesy w tle (np. wideo)
 }
-
-// Inicjalizacja przycisków po załadowaniu DOM
-document.addEventListener("DOMContentLoaded", () => {
-    const buttons = document.querySelectorAll("[data-url]");
-    buttons.forEach(btn => {
-        btn.addEventListener("click", showiframe);
-    });
-
-    // Obsługa przycisku zamknięcia (jeśli masz taki w HTML)
-    const closeBtn = document.getElementById("close-btn");
-    if (closeBtn) closeBtn.addEventListener("click", closeFrame);
-});
 
 
 

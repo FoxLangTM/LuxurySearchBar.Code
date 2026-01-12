@@ -2,7 +2,39 @@
 body {
 margin:0; font-family:sans-serif; background:white; color:black; height:100vh; overflow:hidden;
 transition: background .3s, color .3s;
+  
+  background-attachment: fixed;
+
+  --bg-dark: #040404;
+  --text-white: #F9F9FA;
+  --text-gray: #AFAFAF;
+  --accent-green: #22D461;
 }
+
+body {
+  /* Główny tekst: Red Hat Display Light */
+  font-family: 'Red Hat Display', sans-serif;
+  font-weight: 300;
+  color: var(--text-white);
+  line-height: 1.6;
+}
+
+h1, h2, h3 {
+  /* Nagłówki: Exo 2 Bold */
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase; /* Exo 2 świetnie wygląda w Capslocku */
+  letter-spacing: 1px;
+}
+
+.subtext, .metadata {
+  /* Podtekst/Dane techniczne: Share Tech */
+  font-family: 'Share Tech', monospace;
+  font-size: 14px; /* Share Tech przy 36px jest ogromny, do interfejsu lepiej go skalować */
+  color: var(--accent-green); /* Ten font idealnie pasuje do Twojej zieleni */
+  text-transform: uppercase;
+}
+
 
 body, * {
 user-select: none;
@@ -10,8 +42,13 @@ user-select: none;
 -webkit-tap-highlight-color: transparent;
 }
 
-@media (prefers-color-scheme: dark) { body { background:#2d2d2d; color:#fff; } }
-@media (prefers-color-scheme: dark) { results-root { background:#2d2d2d; color: #D1D1DC;} }
+@media (prefers-color-scheme: dark) { body { background: #131313; color:#fff; } }
+/*Przyszłość background: linear-gradient(to top, #2E43A8 0%, #040404 40%)*/
+
+@media (prefers-color-scheme: dark) { results-root { background: #131313;
+ color: #D1D1DC;} }
+ /*Przyszłość background: linear-gradient(180deg, #181819 0%, #131313 100%);*/
+ 
 @media (prefers-color-scheme: white) { results-root { color: #2d2d2d;} }
 
 
@@ -23,6 +60,8 @@ align-items:center; justify-content:center;
 font-size:25px; cursor:pointer; z-index:20;
 transition: transform .3s; box-shadow:0 0 12px rgba(0,0,0,0.5);
 }
+
+.search-button:hover { background-color: #2E43A8; }
 .search-button:active { transform: scale(.9); }
 
 
@@ -66,7 +105,8 @@ display: flex;
 align-items:center;
 z-index:25; gap: 10px;
 box-shadow:0 0 12px rgba(0,0,0,0.5);
-background:#2a2a2a;
+background: rgba(46,46,46, 0.7);
+backdrop-filter: blur(10px);
 border-radius:25px;
 padding:8px 12px;
 height:36px;
@@ -163,11 +203,10 @@ transform: translateY(0);
 }
 
 
-@media (prefers-color-scheme: dark) {
+
 .settings-panel {
 background: linear-gradient(145deg, rgba(40, 40, 40, 0.4), rgba(10, 10, 10, 0.3));
 color: #fff;
-}
 }
 
 .settings-close-line {
@@ -434,6 +473,7 @@ padding-bottom: 40px;
 color: #D1D1DC;
 }
 
+
 .loading-indicator {
 text-align: center;
 padding: 20px;
@@ -459,7 +499,8 @@ flex-direction: row;
 align-items: flex-start;
 gap: 15px;
 background: #1d1d1d;
-border-radius: 18px;
+border: #2E2E2E;
+border-radius: 20px;
 padding: 12px 15px;
 overflow: hidden;
 transition: transform 0.2s, box-shadow 0.2s;
@@ -479,21 +520,27 @@ flex-shrink: 0;
 .results-res-info {
 display: flex;
 flex-direction: column;
+top: -4px;
+color: #FCFCFD;
+margin: 0.2;
 flex: 1;
 overflow: hidden;
 }
 .results-res-info h3 {
 font-size: 16px; font-weight: bold;
-margin: 0 0 4px 0; white-space: nowrap;
+margin: 0 0 16px 0; white-space: nowrap;
 overflow: hidden; text-overflow: ellipsis;
 max-width: calc(100% - 10px);
 }
 .results-res-desc {
 display: flex; flex-direction: row; align-items: center; gap: 10px;
+color: #AFAFAF;
+opacity: 0.7;
+letter-spacing: 2px;
 margin-bottom: 6px;
 }
 .results-res-text {
-font-size: 13px; color: #aaa; margin: 0; line-height: 1.2em;
+font-size: 13px; color: #aaa; margin: 0 0 0.2px 0; line-height: 1.2em;
 overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
 -webkit-line-clamp: 3; -webkit-box-orient: vertical; flex:1;
 }

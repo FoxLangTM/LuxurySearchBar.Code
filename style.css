@@ -1020,3 +1020,15 @@ from -90deg,
   background: rgba(0, 0, 0, 0.4); /* Ciemniejsza nakładka dla kontrastu */
 }
 
+
+.iframe-kill, .iframe-resize, .iframe-minimize {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    position: absolute;
+    top: 15px;
+    cursor: pointer;
+    z-index: 3005; /* Muszą być na samym wierzchu */
+}
+
+

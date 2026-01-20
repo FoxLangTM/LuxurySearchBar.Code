@@ -27,10 +27,11 @@
         <div class="iframe-kill" onclick="hideIframe()"></div>
         <div class="iframe-resize" onclick="toggleResize()"></div>
         <div class="iframe-minimize" onclick="toggleMinimize()"></div>
+        <button class="fox-pin-btn" onclick="pinCurrentProcess()" title="Add-process"><span style="font-size: 14px;">❖</span></button>
+        <div class="iframe-fullscreen" onclick="toggleFullScreen()"><span style="font-size: 10px; color: white; pointer-events: none;"><i class="fa-solid fa-expand"></i></span></div>
     </div>
-    <iframe class="iframe" src="" title="FoxFrame" sandbox="allow-scripts allow-same-origin" referrerpolicy="no-referrer"></iframe>
+    <iframe class="iframe" src="" title="FoxFrame" sandbox="allow-scripts allow-same-origin allow-popups allow-forms" referrerpolicy="no-referrer"></iframe>
 </div>
-
 
 
 <h1 class="visually-hidden" hidden>FoxCorp • Your own browser</h1>
@@ -91,12 +92,22 @@
     </div>  
   </div>
   
+  
+<div id="cardsOverlay" class="settings-overlay">
+    <div class="cards-panel">
+        <div class="settings-close-line" onclick="closeCardsManager()"></div>
+        <div class="card-tittle">• CARDS •</div>
+        <div id="cardsGridContainer"></div>
+    </div>
+</div>
+
+  
 
       <!-- Dock -->    
       <div class="settings-dock">  
     <input type="text" class="settings-field" value="⚙︎" readonly="⚙︎">  
-    <button class="settings-add-card">+</button>  
-    <button class="settings-cards">❖</button>  
+    <button class="settings-add-card" onclick="newCardMannager">+</button>  
+    <button class="settings-cards" onclick="showTabsManager()">❖</button>
     <button class="settings-button" id="dockBtn">⛶</button>  
     <div class="dock-menu" id="dockMenu">  
       <div class="menu-item" id="home-btn">⌂</div>  

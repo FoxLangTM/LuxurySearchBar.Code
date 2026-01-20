@@ -989,28 +989,15 @@ function updateCategory(index) {
 // ale przypiszemy ją do window wewnątrz, żeby była pancerna.
 function showiframe(event) {
     const container = document.getElementById("iframed");
-    let iframe = container.querySelector("iframe");
-
-    // --- POPRAWKA: Sprawdzanie i tworzenie struktury, jeśli jej nie ma ---
-    if (!container.querySelector('.iframe-controls')) {
-        container.innerHTML = `
-            <div class="iframe-controls">
-                <div class="iframe-kill" onclick="hideIframe()"></div>
-                <div class="iframe-resize" onclick="toggleResize()"></div>
-                <div class="iframe-minimize" onclick="toggleMinimize()"></div>
-            </div>
-            <iframe class="iframe"></iframe>
-        `;
-        iframe = container.querySelector("iframe"); // Ponowne przypisanie po utworzeniu
-    }
-    // --- KONIEC POPRAWKI ---
-
+    const iframe = container.querySelector("iframe");
+    
     let target = event.currentTarget || event.target;
     if (!target.getAttribute("data-url")) {
         target = target.closest('[data-url]');
     }
-
+    
     const url = target.getAttribute("data-url");
+    
     if (url) {
         document.body.style.overflow = "hidden"; 
         container.classList.remove("hidden", "minimized", "compact");
@@ -1018,7 +1005,7 @@ function showiframe(event) {
         container.style.display = "flex";
     }
 }
-
+window.showiframe = showiframe;
 
 function hideIframe() {
     const container = document.getElementById("iframed");
@@ -1061,3 +1048,129 @@ function toggleResize() {
         console.log("Rozmiar przełączony");
     }
 }
+
+function toggleFullScreen() {
+    const container = document.getElementById("iframed");
+    
+    if (!document.fullscreenElement) {
+        // Wejdź w pełny ekran dla całego kontenera FoxFrame
+        if (container.requestFullscreen) {
+            container.requestFullscreen();
+        } else if (container.webkitRequestFullscreen) { /* Safari/iOS */
+            container.webkitRequestFullscreen();
+        } else if (container.msRequestFullscreen) { /* IE11 */
+            container.msRequestFullscreen();
+        }
+    } else {
+        // Wyjdź z pełnego ekranu
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        }
+    }
+}
+window.toggleFullScreen = toggleFullScreen;
+
+
+// Tablica na procesy - musi być na górze lub poza funkcjami
+if (typeof foxTabs === 'undefined') {
+    var foxTabs = []; 
+}
+
+function showTabsManager() {
+    const cOverlay = document.getElementById("cardsOverlay");
+    const cGrid = document.getElementById("cardsGridContainer");
+
+    // Budujemy siatkę prostokątów
+    let gridHTML = `<div class="google-style-grid">`;
+    
+    if (typeof foxTabs !== 'undefined' && foxTabs.length > 0) {
+        foxTabs.forEach((tab, i) => {
+            gridHTML += `
+                <div class="tab-rect" onclick="restoreTab('${tab.url}')">
+                    <span class="tab-label">CARD ${i + 1}</span>
+                    <div class="tab-info">${tab.title}</div>
+                </div>`;
+        });
+    } else {
+        gridHTML += `
+            <div style="grid-column:1/-1; opacity:0.5; text-align:center; padding:40px; font-family:'Share Tech'; color:#fff; font-size:11px;">
+                None cards here.... Pin card by button ❖ in window.
+            </div>`;
+    }
+    gridHTML += `</div>`;
+
+    cGrid.innerHTML = gridHTML;
+    cOverlay.classList.add("show");
+}
+
+function closeCardsManager() {
+    document.getElementById("cardsOverlay").classList.remove("show");
+}
+
+// Funkcja przywracania karty (zamyka panel kart)
+function restoreTab(url) {
+    const container = document.getElementById("iframed");
+    container.querySelector("iframe").src = url;
+    closeCardsManager();
+    container.style.display = "flex";
+    container.classList.remove("hidden");
+}
+
+
+
+
+
+function pinCurrentProcess() {
+    const iframe = document.querySelector("#iframed iframe");
+    const currentUrl = iframe.src;
+
+    // Sprawdzamy, czy w iframe w ogóle coś jest załadowane
+    if (currentUrl && currentUrl !== "about:blank" && currentUrl !== "") {
+        if (typeof foxTabs === 'undefined') window.foxTabs = [];
+
+        // Sprawdzamy, czy ten URL już istnieje na liście, żeby nie robić śmietnika
+        const exists = foxTabs.some(t => t.url === currentUrl);
+        
+        if (!exists) {
+            foxTabs.push({ 
+                url: currentUrl, 
+                title: currentUrl.split('/')[2] // Wycinamy domenę jako tytuł
+            });
+            console.log("Added to cards: " + currentUrl);
+        }
+    }
+}
+
+
+
+function newCardMannager() {
+    // 1. Najpierw wywołujemy Twoją funkcję przypinania (pin)
+    // Używamy Twojej logiki pinCurrentProcess, aby zapisać URL
+    if (typeof pinCurrentProcess === 'function') {
+        pinCurrentProcess();
+    }
+
+    // 2. Resetujemy ekran i wracamy do strony głównej
+    const container = document.getElementById("iframed");
+    const iframe = container.querySelector("iframe");
+
+    if (container) {
+        // Dodajemy klasę ukrywającą (dla animacji)
+        container.classList.add("hidden");
+        document.body.style.overflow = ""; 
+
+        // Natychmiastowe czyszczenie i powrót
+        setTimeout(() => {
+            container.style.display = "none";
+            if (iframe) {
+                iframe.src = ""; // Czyścimy src, żeby strona nie działała w tle
+            }
+            console.log("System: Card pinned and returned to Home");
+        }, 500); // czas dopasowany do Twojej animacji hideIframe
+    }
+}
+
+// Upewniamy się, że funkcja jest dostępna globalnie dla przycisku
+window.newCardMannager = newCardMannager;

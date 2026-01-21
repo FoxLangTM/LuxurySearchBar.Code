@@ -21,6 +21,16 @@ body {
   line-height: 1.6;
 }
 
+
+.saira-<uniquifier> {
+  font-family: "Saira", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 300;
+}
+
 h1, h2, h3 {
   /* Nagłówki: Exo 2 Bold */
   font-family: 'Exo 2', sans-serif;
@@ -679,11 +689,26 @@ opacity: 0.7;
 letter-spacing: 2px;
 margin-bottom: 6px;
 }
+
+
+
 .results-res-text {
 font-size: 13px; color: #aaa; margin: 0 0 0.2px 0; line-height: 1.2em;
 overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
 -webkit-line-clamp: 3; -webkit-box-orient: vertical; flex:1;
 }
+
+.results-res-info h3 {
+  font-family: 'Saira', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  font-style: SemiBold;
+  line-height: 1.1;
+  opacity: 0.8;
+  font-variation-settings:
+    "wdth" 500;
+}
+
 .results-res-mini {
 width: 50px; height: 50px; border-radius: 10px; object-fit: cover; flex-shrink:0;
 }
@@ -957,6 +982,111 @@ from -90deg,
     cursor: pointer;
     z-index: 99999 !important;
     pointer-events: auto !important;
+}
+
+
+.iframe-kill, .iframe-resize, .iframe-minimize {
+    position: absolute;
+    top: 15px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 3005; /* Najwyżej */
+}
+
+.iframe-kill { left: 20px; background-color: #CF3A2F; }
+.iframe-resize { left: 50px; background-color: #FEBA39; }
+.iframe-minimize { left: 80px; background-color: #22CB41; }
+
+.iframe {
+    width: 95%;
+    height: calc(100% - 70px);
+    border: none;
+    border-radius: 12px;
+    z-index: 2999; /* Niżej niż przyciski */
+}
+
+
+
+/* Zielony przycisk - Mini podgląd w rogu */
+#iframed.minimized {
+    width: 300px !important;
+    height: 180px !important;
+    top: auto !important;
+    left: auto !important;
+    bottom: 80px !important;
+    right: 20px !important;
+    border: 2px solid #22CB41;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* Żółty przycisk - Tryb okienkowy */
+#iframed.compact {
+    width: 70% !important;
+    height: 70% !important;
+    top: 10% !important;
+    left: 15% !important;
+    border: 2px solid #FEBA39;
+    border-radius: 20px;
+}
+
+#iframed {
+    display: flex !important; /* Musi być flex cały czas */
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    background: rgba(0,0,0,0.9);
+    align-items: center;
+    flex-direction: column;
+    
+    /* HYPER OS EFFECT */
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(1.1) translateY(30px);
+    filter: blur(10px);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#iframed:not(.hidden) {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+}
+
+.iframe-fullscreen {
+    position: absolute;
+    top: 15px;
+    right: 20px; /* Po prawej stronie paska */
+    width: 20px; /* Nieco szerszy, żeby zmieścić napis F11 lub ikonę */
+    height: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 3005;
+    transition: all 0.2s var(--hyper-out);
+}
+
+.iframe-fullscreen:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.iframe-fullscreen:active {
+    transform: scale(0.9);
+}
+
+
+
+.overlay.show, .settings-overlay.show {
+  backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.4); /* Ciemniejsza nakładka dla kontrastu */
 }
 
 

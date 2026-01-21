@@ -5,11 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FoxCorp # Your own Fast Browser</title>
 
+
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' 'unsafe-inline';
+  style-src 'self' 'unsafe-inline';
+  trusted-types myPolicy;
+">
 <meta name="description" content="FoxCorp | A browser with exceptional taste, focused on performance, design, and features. Give it a try if you haven't tried it yet.">
 <meta name="robots" content="index, follow">
+<meta property="og:title" content="FoxCorp # Your own Fast Browser">
+<meta property="og:image" content="/FoxCorp.png">
 
+<link rel="canonical" href="https://twoja-domena.pl/">
 <link rel="apple-touch-icon" sizes="180x180" href="/FoxCorp.png">
-<link rel="stylesheet" href="style.css?v=1.0" defer>
 <link rel="manifest" href="/manifest.json">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
 
@@ -17,6 +26,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Red+Hat+Display:wght@300&family=Share+Tech&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Saira:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+<h1 class="visually-hidden" hidden>FoxCorp • Your own browser</h1>
+<h1 class="visually-hidden" hidden>FoxCorp | A browser with exceptional taste, focused on performance, design, and features. Give it a try if you haven't tried it yet."</h1>
 </head>
 
 
@@ -31,11 +42,17 @@
         <button class="fox-pin-btn" onclick="pinCurrentProcess()" title="Add-process"><span style="font-size: 14px;">❖</span></button>
         <div class="iframe-fullscreen" onclick="toggleFullScreen()"><span style="font-size: 10px; color: white; pointer-events: none;"><i class="fa-solid fa-expand"></i></span></div>
     </div>
-    <iframe class="iframe" src="" title="FoxFrame" sandbox="allow-scripts allow-same-origin allow-popups allow-forms" referrerpolicy="no-referrer"></iframe>
+    
+    <iframe class="iframe"
+        src="" 
+        allow="payment; camera; microphone; geolocation; accelerometer; gyroscope; magnetometer; screen-wake-lock; autoplay; fullscreen; picture-in-picture; encrypted-media; clipboard-read; clipboard-write;"
+        sandbox="allow-downloads allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation"
+        loading="eager" 
+        importance="high">
+    </iframe>
+    
 </div>
 
-
-<h1 class="visually-hidden" hidden>FoxCorp • Your own browser</h1>
 
   <!-- Search button -->
     <div class="search-button" id="searchBtn"><span>⌕</span></div>    <!-- Overlay -->    <div class="overlay" id="overlay">  

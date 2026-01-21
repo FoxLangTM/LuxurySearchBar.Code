@@ -1,24 +1,3 @@
-// ==================================//
-// BEZPIECZEŃSTWO
-// ==================================//
-if (window.trustedTypes) {
-    window.trustedTypes.createPolicy('myPolicy', {
-        createHTML: (input) => {
-            if (/script|iframe|object|embed/i.test(input)) {
-                console.warn('Niebezpieczne HTML zablokowane:', input);
-                return '';
-            }
-            return input;
-        },
-        createScript: (input) => {
-            console.warn('Inline script zablokowany przez Trusted Types');
-            return null;
-        }
-    });
-}
-//----------------------------------------------------------//
-
-
 const btn = document.getElementById("searchBtn");
 const overlay = document.getElementById("overlay");
 const input = document.getElementById("searchInput");

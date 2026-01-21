@@ -959,7 +959,7 @@ from -90deg,
 }
 
 #iframed {
-    display: flex; /* Zmieniamy na flex tylko gdy nie ma klasy .hidden */
+    display: none; /* Zmieniamy na flex tylko gdy nie ma klasy .hidden */
     position: fixed;
     inset: 0;
     z-index: 3000; /* Bardzo wysoki z-index */
@@ -1033,7 +1033,7 @@ from -90deg,
 }
 
 #iframed {
-    display: flex !important; /* Musi być flex cały czas */
+    display: none; /* Musi być flex cały czas */
     position: fixed;
     inset: 0;
     z-index: 3000;

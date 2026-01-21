@@ -1,13 +1,27 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FoxCorp # Your own Fast Browser</title>
 
-
 <meta name="description" content="FoxCorp | A browser with exceptional taste, focused on performance, design, and features. Give it a try if you haven't tried it yet.">
+<meta name="keywords" content="FoxCorp, Browser, Fast Browser, Performance, UI Design, Privacy">
 <meta name="robots" content="index, follow">
+<link rel="canonical" href="https://twoja-domena.pl/">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://twoja-domena.pl/">
+<meta property="og:title" content="FoxCorp # Your own Fast Browser">
+<meta property="og:description" content="Exceptional taste, focused on performance and design.">
+<meta property="og:image" content="/FoxCorp.png">
+
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:title" content="FoxCorp # Your own Fast Browser">
+<meta property="twitter:description" content="A browser with exceptional taste, focused on performance and design.">
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 
 <link rel="stylesheet" href="style.css">
 <link rel="apple-touch-icon" sizes="180x180" href="/FoxCorp.png">
@@ -19,6 +33,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700&family=Red+Hat+Display:wght@300&family=Share+Tech&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Saira:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "FoxCorp Browser",
+  "operatingSystem": "Web",
+  "applicationCategory": "BrowserApplication",
+  "description": "High performance web browser interface."
+}
+</script>
 
 </head>
 
@@ -27,105 +51,110 @@
 
 <div id="iframed" class="iframed hidden">
     <div class="iframe-controls">
-        <div class="iframe-kill" onclick="hideIframe()"></div>
-        <div class="iframe-resize" onclick="toggleResize()"></div>
-        <div class="iframe-minimize" onclick="toggleMinimize()"></div>
-        <button class="fox-pin-btn" onclick="pinCurrentProcess()" title="Add-process"><span style="font-size: 14px;">❖</span></button>
-        <div class="iframe-fullscreen" onclick="toggleFullScreen()"><span style="font-size: 10px; color: white; pointer-events: none;"><i class="fa-solid fa-expand"></i></span></div>
+        <div class="iframe-kill" onclick="hideIframe()" role="button" aria-label="Close window"></div>
+        <div class="iframe-resize" onclick="toggleResize()" role="button" aria-label="Toggle resize"></div>
+        <div class="iframe-minimize" onclick="toggleMinimize()" role="button" aria-label="Minimize"></div>
+        <button class="fox-pin-btn" onclick="pinCurrentProcess()" title="Add-process" aria-label="Add process"><span style="font-size: 14px;">❖</span></button>
+        <div class="iframe-fullscreen" onclick="toggleFullScreen()" role="button" aria-label="Full screen"><span style="font-size: 10px; color: white; pointer-events: none;"><i class="fa-solid fa-expand"></i></span></div>
     </div>
-    
-    
+
+
     <iframe class="iframe"
+        id="mainIframe"
+        title="FoxCorp Content Window"
         src=""
         sandbox="allow-downloads allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation"
         loading="eager" 
         importance="high">
     </iframe>
-    
-    
+
+
 </div>
 
 
-  <!-- Search button -->
-    <div class="search-button" id="searchBtn"><span>⌕</span></div>    <!-- Overlay -->    <div class="overlay" id="overlay">  
+  <div class="search-button" id="searchBtn" role="button" aria-label="Open search"><span>⌕</span></div>    
+  <div class="overlay" id="overlay">  
     <div class="search-menu">  
       <div class="search-bar">  
-        <input id="searchInput" type="text" placeholder="">  
+        <input id="searchInput" type="text" placeholder="Search FoxCorp..." aria-label="Search field">  
       </div>  
-      <div class="result" data-index="0"></div>  
-      <div class="result" data-index="1"></div>  
-      <div class="result" data-index="2"></div>  
-      <div class="result" data-index="3"></div>  
+      <div class="result" data-index="0" role="option"></div>  
+      <div class="result" data-index="1" role="option"></div>  
+      <div class="result" data-index="2" role="option"></div>  
+      <div class="result" data-index="3" role="option"></div>  
     </div>  
-  </div>    <div class="results-root"  style="display:none;">  
+  </div>    
+
+  <div class="results-root" style="display:none;" aria-live="polite">  
     <div class="results-header">  
       <h2 id="queryTitle"></h2>  
     </div>  
     <div class="results-container">  
       <div onclick="showiframe()" class="results-grid"></div>  
-    </div>  <!-- Trigger po lewej -->  
-<div class="scroll-trigger">  
-  <div class="trigger-dot"></div>  
-</div>
+    </div>  
+    <div class="scroll-trigger" role="presentation">  
+      <div class="trigger-dot"></div>  
+    </div>
+  </div>    
 
-  </div>    <div class="settings-overlay" id="settingsOverlay">  
+  <div class="settings-overlay" id="settingsOverlay">  
     <div class="settings-panel">  
-      <div class="settings-close-line"></div>  <div class="dot-container">  
-    <div class="dot" data-layer="layer1">  
-      <img src="https://pic.onlinewebfonts.com/thumbnails/icons_154090.svg" alt="X">  
-    </div>  
-    <div class="dot" data-layer="layer2">  
-      <img src="https://pic.onlinewebfonts.com/thumbnails/icons_580175.svg" alt="Y">  
-    </div>  
-    <div class="dot" data-layer="layer3">  
-      <img src="https://pic.onlinewebfonts.com/thumbnails/icons_374986.svg" alt="Z">  
-    </div>  
-  </div>  
+      <div class="settings-close-line" role="button" aria-label="Close settings"></div>  
+      <div class="dot-container">  
+        <div class="dot" data-layer="layer1" role="button" aria-label="Layer 1">  
+          <img src="https://pic.onlinewebfonts.com/thumbnails/icons_154090.svg" alt="General Settings">  
+        </div>  
+        <div class="dot" data-layer="layer2" role="button" aria-label="Layer 2">  
+          <img src="https://pic.onlinewebfonts.com/thumbnails/icons_580175.svg" alt="Interface Settings">  
+        </div>  
+        <div class="dot" data-layer="layer3" role="button" aria-label="Layer 3">  
+          <img src="https://pic.onlinewebfonts.com/thumbnails/icons_374986.svg" alt="Performance Settings">  
+        </div>  
+      </div>  
 
-       <div class="settings-toggle">
+      <div class="settings-toggle">
+        <div class="toggle-knob" role="switch" aria-checked="false" aria-label="Experimental mode"></div>  
+        <span class="toggle-label">Experimental Mode</span>  
+      </div>  
 
-  <div class="toggle-knob"></div>  
-  <span class="toggle-label">Tryb eksperymentalny</span>  
-
-</div>  <!-- LAYER 3 -->  <div id="variation_layer3" class="performance-control">
-  <div class="performance-label">\Wydajność ∆\</div>
-  <div class="performance-range-wrapper">
-    <input type="range" id="perfRange3" min="0" max="100" value="0" step="50">
-  </div>
-  <div class="performance-scale">
-    <span>Low End</span><span>Half End</span><span>Full End</span>
-  </div>
-  <div class="performance-emojis">
-    <span>💢</span><span>🔆</span><span>✨</span>
-  </div>
-</div>  
+      <div id="variation_layer3" class="performance-control">
+        <div class="performance-label">\Performance ∆\</div>
+        <div class="performance-range-wrapper">
+          <input type="range" id="perfRange3" min="0" max="100" value="0" step="50" aria-label="Performance slider">
+        </div>
+        <div class="performance-scale">
+          <span>Low End</span><span>Half End</span><span>Full End</span>
+        </div>
+        <div class="performance-emojis">
+          <span role="img" aria-label="Low performance">💢</span><span role="img" aria-label="Medium performance">🔆</span><span role="img" aria-label="High performance">✨</span>
+        </div>
+      </div>  
     </div>  
   </div>
-  
-  
+
+
 <div id="cardsOverlay" class="settings-overlay">
     <div class="cards-panel">
-        <div class="settings-close-line" onclick="closeCardsManager()"></div>
+        <div class="settings-close-line" onclick="closeCardsManager()" role="button" aria-label="Close cards"></div>
         <div class="card-tittle">• CARDS •</div>
         <div id="cardsGridContainer"></div>
     </div>
 </div>
 
-  
 
-      <!-- Dock -->    
-      <div class="settings-dock">  
-    <input type="text" class="settings-field" value="⚙︎" readonly="⚙︎">  
-    <button class="settings-add-card" onclick="newCardMannager">+</button>  
-    <button class="settings-cards" onclick="showTabsManager()">❖</button>
-    <button class="settings-button" id="dockBtn">⛶</button>  
+
+<div class="settings-dock" role="navigation" aria-label="Main dock">  
+    <input type="text" class="settings-field" value="⚙︎" readonly="⚙︎" aria-label="System status">  
+    <button class="settings-add-card" onclick="newCardMannager" aria-label="Add new card">+</button>  
+    <button class="settings-cards" onclick="showTabsManager()" aria-label="Card manager">❖</button>
+    <button class="settings-button" id="dockBtn" aria-label="System menu">⛶</button>  
     <div class="dock-menu" id="dockMenu">  
-      <div class="menu-item" id="home-btn">⌂</div>  
-      <div class="menu-item" id="settings-btn">֎</div>  
-      <div class="menu-item">➤</div>  
+      <div class="menu-item" id="home-btn" role="link" aria-label="Home">⌂</div>  
+      <div class="menu-item" id="settings-btn" role="link" aria-label="Settings">֎</div>  
+      <div class="menu-item" role="button" aria-label="Next">➤</div>  
     </div>  
-  </div>
+</div>
 
-      <script src="script.js" defer></script>
-       </body>  
+<script src="script.js" defer></script>
+</body>  
 </html>

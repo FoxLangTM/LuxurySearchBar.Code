@@ -951,6 +951,13 @@ from -90deg,
 }
 
 
+/* Wymuszamy ukrycie na starcie */
+#iframed.hidden {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
 #iframed {
     display: flex; /* Zmieniamy na flex tylko gdy nie ma klasy .hidden */
     position: fixed;
@@ -960,13 +967,6 @@ from -90deg,
     align-items: center;
     flex-direction: column;
     transition: opacity 0.3s ease;
-}
-
-/* Wymuszamy ukrycie na starcie */
-#iframed.hidden {
-    display: none !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
 }
 
 
@@ -1033,7 +1033,7 @@ from -90deg,
 }
 
 #iframed {
-    display: flex; /* Musi być flex cały czas */
+    display: flex !important; /* Musi być flex cały czas */
     position: fixed;
     inset: 0;
     z-index: 3000;
@@ -1231,38 +1231,4 @@ from -90deg,
     text-align: center;
     margin-bottom: 20px;
     letter-spacing: 2px;
-}
-
-
-/* 1. Stan bazowy - ukryty */
-#iframed {
-    display: none; /* CAŁKOWITE UKRYCIE NA STARCE */
-    position: fixed;
-    inset: 0;
-    z-index: 3000;
-    background: rgba(0,0,0,0.9);
-    align-items: center;
-    flex-direction: column;
-
-    /* HYPER OS EFFECT */
-    opacity: 0;
-    pointer-events: none;
-    transform: scale(1.1) translateY(30px);
-    filter: blur(10px);
-    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* 2. Stan widoczny (usuwamy klasę hidden) */
-#iframed:not(.hidden) {
-    display: flex !important; /* Pokazuje kontener tylko gdy nie ma klasy hidden */
-    opacity: 1;
-    pointer-events: auto;
-    transform: scale(1) translateY(0);
-    filter: blur(0);
-}
-
-/* 3. Wymuszenie ukrycia */
-#iframed.hidden {
-    display: none !important;
-    opacity: 0 !important;
 }

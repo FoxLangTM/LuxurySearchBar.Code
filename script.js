@@ -493,26 +493,6 @@ layer.parentElement.classList.add('active'); // włącza opacity i pointer-event
 });
 
 
-const binaryToggle = document.getElementById('toggle1');
-const leftLabel = binaryToggle.querySelector('.toggle-label.left');
-const rightLabel = binaryToggle.querySelector('.toggle-label.right');
-
-binaryToggle.addEventListener('click', () => {
-  const isLeftActive = leftLabel.classList.contains('active');
-
-  if(isLeftActive){
-    leftLabel.classList.remove('active');
-    rightLabel.classList.add('active');
-    binaryToggle.classList.add('active');
-  } else {
-    leftLabel.classList.add('active');
-    rightLabel.classList.remove('active');
-    binaryToggle.classList.remove('active');
-  }
-});
-
-
-
 const toggle = document.querySelector('.toggle-knob');
 const settingsToggle = document.querySelector('.settings-toggle');
 

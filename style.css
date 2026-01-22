@@ -1232,3 +1232,23 @@ from -90deg,
     margin-bottom: 20px;
     letter-spacing: 2px;
 }
+
+
+
+
+
+/* Widoczna ramka dla użytkowników klawiatury */
+:focus-visible {
+    outline: 3px solid #00AAFF !important;
+    outline-offset: 4px;
+}
+
+/* Ukrycie ramki przy kliknięciu myszką (żeby nie drażnić oka) */
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Zapewnienie, że interaktywne elementy mają kursor rączki */
+[role="button"], .menu-item, .dot, .toggle-knob {
+    cursor: pointer;
+}

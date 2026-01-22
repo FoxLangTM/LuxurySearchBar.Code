@@ -4,6 +4,32 @@ if ('serviceWorker' in navigator) {
 
 
 
+const debounce = (func, delay) => {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+    };
+};
+
+const throttle = (func, limit) => {
+    let inThrottle;
+    return (...args) => {
+        if (!inThrottle) {
+            func.apply(this, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    };
+};
+
+// Przykład użycia dla wyszukiwarki:
+// Zamiast: searchInput.addEventListener('input', startSearch);
+// Użyj: searchInput.addEventListener('input', debounce(startSearch, 300));
+
+
+
+
 // ==================================//
 // BEZPIECZEŃSTWO
 // ==================================//
@@ -1225,3 +1251,27 @@ function newCardMannager() {
 
 // Upewniamy się, że funkcja jest dostępna globalnie dla przycisku
 window.newCardMannager = newCardMannager;
+
+
+
+
+// FoxCorp Shortcut & Action Handler
+window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action');
+
+    // Make sure your function names match (e.g., showSearch or openSettings)
+    if (action === 'search') {
+        setTimeout(() => {
+            const searchBtn = document.getElementById('searchBtn');
+            if (searchBtn) searchBtn.click();
+        }, 300); // Small delay to ensure animations load
+    } 
+    else if (action === 'settings') {
+        setTimeout(() => {
+            const settingsBtn = document.getElementById('settings-btn');
+            if (settingsBtn) settingsBtn.click();
+        }, 300);
+    }
+});
+

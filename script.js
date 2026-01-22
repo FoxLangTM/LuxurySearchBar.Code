@@ -486,7 +486,6 @@ function applyOptimizations(level) {
 
   if (level == 100) { // Max Power - Pełne efekty
     body.classList.add('max-power');
-    initWebGLNeonBackground(); 
     body.style.overflow = '';
     console.log("Tryb: Pełna Wydajność");
   } else if (level == 50) { // Balanced - Środek
@@ -639,8 +638,17 @@ function applyOptimizations(level) {
   const body = document.body;
   body.classList.remove('max-power', 'balanced', 'optimized');
 
+  // CZYSZCZENIE TŁA: Jeśli istnieje stare tło WebGL, usuwamy je
+  const oldCanvas = document.querySelector('canvas');
+  if (oldCanvas && level < 100) {
+    oldCanvas.remove();
+  }
+
   if (level == 100) { // Max Power
     body.classList.add('max-power');
+    // Jeśli chcesz zupełnie usunąć błękitny gradient, 
+    // zakomentuj poniższą linię:
+    // initWebGLNeonBackground(); 
     console.log("Tryb: Pełna Wydajność");
   } else if (level == 50) { // Balanced
     body.classList.add('balanced');
@@ -650,6 +658,7 @@ function applyOptimizations(level) {
     console.log("Tryb: Oszczędny");
   }
 }
+
 
 
 // Automatyczny zapis raw na wyjście

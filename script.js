@@ -501,67 +501,6 @@ function applyOptimizations(level) {
   }
 }
 
-
-function initWebGLNeonBackground() {
-  // Kreatywny add-on: webGL canvas z metaliczno-neonowym gradientem (srebrno-błękitny puls z ciemniejszym halo)
-  const canvas = document.createElement('canvas');
-  canvas.style.position = 'fixed';
-  canvas.style.top = '0';
-  canvas.style.left = '0';
-  canvas.style.width = '100%';
-  canvas.style.height = '100%';
-  canvas.style.zIndex = '-1';
-  canvas.style.pointerEvents = 'none'; // Nie blokuje interakcji
-  document.body.appendChild(canvas);
-
-  const gl = canvas.getContext('webgl');
-  if (!gl) return; // Fallback if no webGL
-
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  const vsSource = `
-    attribute vec4 aPosition;
-    void main() {
-      gl_Position = aPosition;
-    }
-  `;
-  const fsSource = `
-    precision mediump float;
-    uniform vec2 uResolution;
-    uniform float uTime;
-    void main() {
-      vec2 uv = gl_FragCoord.xy / uResolution;
-      vec3 color = mix(vec3(0.66,0.66,0.66), vec3(0.0,0.66,1.0), uv.x + sin(uTime * 0.5) * 0.1); // Srebrno-błękitny neon puls
-      color *= 0.8 + 0.2 * sin(uv.y * 10.0 + uTime); // Dostojny metaliczny wzór
-      vec3 darkHalo = color * 0.7; // Ciemniejszy dla głębi halo
-      gl_FragColor = vec4(mix(color, darkHalo, 0.3), 1.0); // Mieszanka z ciemniejszym halo
-    }
-  `;
-
-  const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
-  gl.useProgram(shaderProgram);
-
-  const positionBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  const positions = [-1.0, 1.0, 1.0, 1.0, -1.0, -1.0, 1.0, -1.0];
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-
-  const positionLocation = gl.getAttribLocation(shaderProgram, 'aPosition');
-  gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(positionLocation);
-
-  const resolutionLocation = gl.getUniformLocation(shaderProgram, 'uResolution');
-  const timeLocation = gl.getUniformLocation(shaderProgram, 'uTime');
-
-  function render() {
-    gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
-    gl.uniform1f(timeLocation, performance.now() / 1000);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    requestAnimationFrame(render);
-  }
-  render();
-
   function initShaderProgram(gl, vsSource, fsSource) {
     const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
     const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);

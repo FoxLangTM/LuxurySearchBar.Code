@@ -289,12 +289,17 @@ document.addEventListener("DOMContentLoaded", () => {
 function createPerfControl(dotId) {
   let level = 1;
   const dot = document.getElementById(dotId);
-  const line = dot?.parentElement;
+  if (!dot) return null; // Bezpiecznik: jeśli nie ma kropki, nie rób nic
+
+  const line = dot.parentElement;
+  if (!line) return null; // Bezpiecznik: jeśli nie ma linii, nie rób nic
+  
   let startX = 0;
 
-  // Canvas do samplingu gradientu (czerwony 0%, złoty 50%, zielony 100%)
+  // Canvas do samplingu gradientu
   const canvas = document.createElement('canvas');
-  canvas.width = line.offsetWidth;
+  // Używamy szerokości linii lub domyślnie 200px jeśli offsetWidth jest zerem
+  canvas.width = line.offsetWidth > 0 ? line.offsetWidth : 200;
   canvas.height = 1;
   const ctx = canvas.getContext('2d');
   const grad = ctx.createLinearGradient(0, 0, canvas.width, 0);

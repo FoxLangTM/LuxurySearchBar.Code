@@ -480,44 +480,6 @@ document.addEventListener("click", (e) => {
 
 
 
-function applyOptimizations(level) {
-  const body = document.body;
-  body.classList.remove('max-power', 'balanced', 'optimized');
-
-  if (level == 100) { // Max Power - Pełne efekty
-    body.classList.add('max-power');
-    body.style.overflow = '';
-    console.log("Tryb: Pełna Wydajność");
-  } else if (level == 50) { // Balanced - Środek
-    body.classList.add('balanced');
-    body.style.overflow = '';
-    console.log("Tryb: Zrównoważony");
-  } else { // 0 - Optimized/Power Save - Wyłączamy zbędne rzeczy
-    body.classList.add('optimized');
-    if (debounceTimer) clearTimeout(debounceTimer);
-    body.style.overflow = 'hidden';
-    console.log("Tryb: Oszczędny");
-  }
-}
-
-  function initShaderProgram(gl, vsSource, fsSource) {
-    const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
-    const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
-    const shaderProgram = gl.createProgram();
-    gl.attachShader(shaderProgram, vertexShader);
-    gl.attachShader(shaderProgram, fragmentShader);
-    gl.linkProgram(shaderProgram);
-    return shaderProgram;
-  }
-
-  function loadShader(gl, type, source) {
-    const shader = gl.createShader(type);
-    gl.shaderSource(shader, source);
-    gl.compileShader(shader);
-    return shader;
-  }
-
-
 const perfRange = document.getElementById('perfRange3');
 const perfWrapper = document.querySelector('.performance-range-wrapper');
 
@@ -922,4 +884,36 @@ window.addEventListener('DOMContentLoaded', () => {
         }, 300);
     }
 });
+
+
+
+
+function applyOptimizations(level) {
+  const body = document.body;
+  
+  // 1. Resetujemy klasy
+  body.classList.remove('max-power', 'balanced', 'optimized');
+
+  // 2. CZYŚCIMY TŁO (Kluczowy krok)
+  // Szukamy elementu canvas, który tworzy błękitny gradient
+  const activeCanvas = document.querySelector('canvas');
+  if (activeCanvas) {
+    activeCanvas.remove();
+    console.log("FoxEngine: WebGL Background Cleaned");
+  }
+
+  // 3. Ustawiamy nowy tryb
+  if (level == 100) { 
+    body.classList.add('max-power');
+    // initWebGLNeonBackground(); // Linia zostaje zakomentowana = brak błękitu
+    console.log("Tryb: Pełna Wydajność");
+  } else if (level == 50) { 
+    body.classList.add('balanced');
+    console.log("Tryb: Zrównoważony");
+  } else { 
+    body.classList.add('optimized');
+    console.log("Tryb: Oszczędny");
+  }
+}
+
 

@@ -315,10 +315,7 @@ function createPerfControl(dotId) {
     return `rgb(${r}, ${g}, ${b})`;
   }
 
-  function darkenColor(color, factor = 0.7) {
-    const [_, r, g, b] = color.match(/rgb\((\d+), (\d+), (\d+)\)/);
-    return `rgba(${Math.floor(r * factor)}, ${Math.floor(g * factor)}, ${Math.floor(b * factor)}, 0.8)`;
-  }
+
 
   function startDrag(e) {
     e.preventDefault();
@@ -343,8 +340,7 @@ function onDrag(e) {
   // Dynamiczny kolor i shadow kropki (zostawiamy Twój fajny efekt)
   const posColor = getColorAt(percent);
   dot.style.background = posColor;
-  const darkShadow = darkenColor(posColor);
-  dot.style.boxShadow = `0 2px 30px ${darkShadow}, 0 0 15px rgba(0,170,255,0.5)`;
+  
 
   // --- NOWA LOGIKA ZAKRESÓW ---
   let newLevel;

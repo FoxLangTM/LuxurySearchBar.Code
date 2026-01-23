@@ -2,7 +2,7 @@
 body {
 margin:0; font-family:sans-serif; background:white; color:black; height:100vh; overflow:hidden;
 transition: background .3s, color .3s;
-  
+
   background-attachment: fixed;
 
   --bg-dark: #040404;
@@ -60,7 +60,7 @@ user-select: none;
 @media (prefers-color-scheme: dark) { results-root { background: #131313;
  color: #D1D1DC;} }
  /*Przyszłość background: linear-gradient(180deg, #181819 0%, #131313 100%);*/
- 
+
 @media (prefers-color-scheme: light) { results-root { color: #2d2d2d;} }
 @media (prefers-color-scheme: light) { search-button { background-color: #B0B0B1;} }
 
@@ -928,22 +928,23 @@ from -90deg,
 
 
 .max-power {
-  transform: scale(1) !important;
   filter: none !important;
 }
 
 
 .balanced {
-  transform: scale(0.95) !important;
   filter: grayscale(0.1) !important;
 }
 
 
 .optimized {
-  transform: scale(0.8) !important;
-  filter: grayscale(0.5) blur(1px) !important;
+  filter: grayscale(0.5) blur(0.5px) brightness(60%) !important;
   transition: none !important;
   animation: none !important;
+  background: #1e1e1e !important;
+  color: #e0e0e0 !important;
+  font-family: system-ui, sans-serif !important;
+  line-height: 1.6 !important;
 }
 
 
@@ -1037,7 +1038,7 @@ from -90deg,
     background: rgba(0,0,0,0.9);
     align-items: center;
     flex-direction: column;
-    
+
     /* HYPER OS EFFECT */
     opacity: 0;
     pointer-events: none;
@@ -1102,6 +1103,7 @@ from -90deg,
   backdrop-filter: blur(12px);
   background: rgba(0, 0, 0, 0.4); /* Ciemniejsza nakładka dla kontrastu */
 }
+
 
 
 /* Tytuł na zielono z poświatą */
@@ -1200,14 +1202,14 @@ from -90deg,
         inset 0 0 30px rgba(255, 255, 255, 0.05),
         0 10px 40px rgba(0, 0, 0, 0.4),
         0 0 25px rgba(0, 170, 255, 0.25);
-    
+
     /* Pozycjonowanie wewnątrz overlay */
     position: relative;
     display: flex;
     flex-direction: column;
     padding: 25px;
     overflow-y: auto;
-    
+
     /* Animacja wejścia */
     transform: translateY(50px);
     opacity: 0;
@@ -1228,24 +1230,4 @@ from -90deg,
     text-align: center;
     margin-bottom: 20px;
     letter-spacing: 2px;
-}
-
-
-
-
-
-/* Widoczna ramka dla użytkowników klawiatury */
-:focus-visible {
-    outline: 3px solid #00AAFF !important;
-    outline-offset: 4px;
-}
-
-/* Ukrycie ramki przy kliknięciu myszką (żeby nie drażnić oka) */
-:focus:not(:focus-visible) {
-    outline: none;
-}
-
-/* Zapewnienie, że interaktywne elementy mają kursor rączki */
-[role="button"], .menu-item, .dot, .toggle-knob {
-    cursor: pointer;
 }

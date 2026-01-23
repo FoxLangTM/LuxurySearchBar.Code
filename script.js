@@ -116,9 +116,10 @@ async function fetchResultsDDG(query, page = 0, perPage = 8) {
 }
 
 
+
 function buildCardHTML(r) {
   return `
-    <img src="${escapeHtml(r.image)}" class="results-res-thumb" loading="lazy"/>
+    <img src="${escapeHtml(r.image)}" class="results-res-thumb" loading="eager"/>
     <div class="results-res-info">
       <h3>${escapeHtml(r.title)}</h3>
       <div class="results-res-desc">
@@ -196,32 +197,7 @@ uniqueResults.forEach((r, index) => {
   }
 
 
-  async function showNextResults() {
-    trigger.classList.remove("active");
-    if (!currentQuery || loading) return;
-    loading = true;
 
-    const grid = document.querySelector(".results-grid");
-    if (!grid) { loading = false; return; }
-
-    const results = await fetchResultsDDG(currentQuery, nextPage, 8);
-    const uniqueResults = results.filter(r => !shownLinks.has(r.link));
-    if (!uniqueResults.length) { loading = false; return; }
-
-    uniqueResults.forEach(r => shownLinks.add(r.link));
-    historyStack.push(uniqueResults);
-    historyIndex = historyStack.length - 1;
-    nextPage++;
-
-    uniqueResults.forEach(r => {
-      const card = document.createElement("div");
-      card.className = "results-res-card";
-      card.innerHTML = buildCardHTML(r);
-      grid.appendChild(card);
-    });
-
-    loading = false;
-  }
 
 
 function setupTrigger() {
@@ -360,29 +336,6 @@ document.addEventListener("click", (e) => {
 // ==================================//
 // 3. USTAWIENIA I WYDAJNOŚĆ
 // ==================================//
-
-const closeLine = document.querySelector(".settings-close-line");
-let closeTimer = null;
-const CLOSE_HOLD = 200;
-
-function startCloseHold() {
-  closeTimer = setTimeout(() => {
-    const panel = document.querySelector(".settings-overlay");
-    if(panel) panel.classList.remove("show");
-  }, CLOSE_HOLD);
-}
-
-function cancelCloseHold() {
-  clearTimeout(closeTimer);
-}
-
-closeLine.addEventListener("mousedown", startCloseHold);
-closeLine.addEventListener("touchstart", startCloseHold, {passive:true});
-document.addEventListener("mouseup", cancelCloseHold);
-document.addEventListener("touchend", cancelCloseHold);
-
-
-
 const settingsBtn = document.getElementById("settings-btn");
 const settingsOverlay = document.getElementById("settingsOverlay");
 
@@ -666,4 +619,3 @@ document.addEventListener("DOMContentLoaded", () => {
   if (action === 'search') setTimeout(() => document.getElementById('searchBtn')?.click(), 300);
   else if (action === 'settings') setTimeout(() => document.getElementById('settings-btn')?.click(), 300);
 });
-

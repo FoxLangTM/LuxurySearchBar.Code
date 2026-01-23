@@ -36,17 +36,32 @@ const resultsSlots = Array.from(document.querySelectorAll(".result"));
 const dockBtn = document.getElementById("dockBtn");
 const homeBtn = document.getElementById("home-btn");
 
+let selectedIndex = -1;
+let debounceTimer = null;
+let nextPage = 0;
 let currentQuery = "";
 let loading = false;
-let nextPage = 0;
-let shownLinks = new Set();
+
 let historyStack = [];
+let historyIndex = -1;
+let shownLinks = new Set();
 
 const proxies = [
   "https://corsproxy.io/?",
   "https://api.allorigins.win/raw?url=",
   "https://thingproxy.freeboard.io/fetch/",
 ];
+
+
+function detectLang() {
+  const sysLang = navigator.languages?.[0] || navigator.language || "pl";
+  const code = sysLang.split("-")[0].toLowerCase();
+  const supported = ["pl","en","de","fr","es","it","pt","nl","sv","ja","zh"];
+  return supported.includes(code) ? code : "pl";
+}
+const lang = detectLang();
+
+
 
 function escapeHtml(str = "") {
   return String(str).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
@@ -100,6 +115,7 @@ async function fetchResultsDDG(query, page = 0, perPage = 8) {
   }).slice(0, perPage);
 }
 
+
 function buildCardHTML(r) {
   return `
     <img src="${escapeHtml(r.image)}" class="results-res-thumb" loading="lazy"/>
@@ -141,35 +157,169 @@ async function showSearchResults(query, reset=false) {
   loading = false;
 }
 
-// Obsługa Scroll Trigger (ładowanie kolejnych stron)
+
+
+async function showNextResults() {
+    if (!currentQuery || loading) return;
+    loading = true;
+
+    const grid = document.querySelector(".results-grid");
+    if (!grid) {
+      loading = false;
+      return;
+    }
+
+    const results = await fetchResultsDDG(currentQuery, nextPage, 8);
+    const uniqueResults = results.filter((r) => !shownLinks.has(r.link));
+
+    if (!uniqueResults.length) {
+      loading = false;
+      return;
+    }
+
+    uniqueResults.forEach((r) => shownLinks.add(r.link));
+    historyStack.push(uniqueResults);
+    historyIndex = historyStack.length - 1;
+    nextPage++;
+
+    // Wewnątrz showNextResults zastąp pętlę forEach:
+uniqueResults.forEach((r, index) => {
+  const card = document.createElement("div");
+  card.className = "results-res-card hyper-animate"; // Dodaj klasę
+  card.style.animationDelay = `${index * 0.05}s`;   // Dodaj delay
+  card.innerHTML = buildCardHTML(r);
+  grid.appendChild(card);
+});
+
+
+    loading = false;
+  }
+
+
+  async function showNextResults() {
+    trigger.classList.remove("active");
+    if (!currentQuery || loading) return;
+    loading = true;
+
+    const grid = document.querySelector(".results-grid");
+    if (!grid) { loading = false; return; }
+
+    const results = await fetchResultsDDG(currentQuery, nextPage, 8);
+    const uniqueResults = results.filter(r => !shownLinks.has(r.link));
+    if (!uniqueResults.length) { loading = false; return; }
+
+    uniqueResults.forEach(r => shownLinks.add(r.link));
+    historyStack.push(uniqueResults);
+    historyIndex = historyStack.length - 1;
+    nextPage++;
+
+    uniqueResults.forEach(r => {
+      const card = document.createElement("div");
+      card.className = "results-res-card";
+      card.innerHTML = buildCardHTML(r);
+      grid.appendChild(card);
+    });
+
+    loading = false;
+  }
+
+
 function setupTrigger() {
   const trigger = document.querySelector(".scroll-trigger");
   if (!trigger) return;
-  let holdTimer;
-  const startHold = () => { trigger.classList.add("active"); holdTimer = setTimeout(() => showSearchResults(currentQuery), 1000); };
-  const cancelHold = () => { clearTimeout(holdTimer); trigger.classList.remove("active"); };
+
+  let holdTimer = null;
+  const HOLD_TIME = 1000;
+
+
+
+function startHold() {
+  trigger.classList.add("active");
+  // Efekt "puchnięcia" przycisku podczas trzymania
+  trigger.style.transform = "scale(1.1)";
+  holdTimer = setTimeout(showNextResults, HOLD_TIME);
+}
+
+function cancelHold() {
+  clearTimeout(holdTimer);
+  trigger.classList.remove("active");
+  trigger.style.transform = "scale(1)"; // Powrót do normy
+}
+
+
   trigger.addEventListener("mousedown", startHold);
   trigger.addEventListener("touchstart", startHold, { passive: true });
   window.addEventListener("mouseup", cancelHold);
   window.addEventListener("touchend", cancelHold);
 }
 
-// Sugestie w pasku wyszukiwania
-input?.addEventListener("input", debounce(async () => {
-  const q = input.value.trim();
-  if (!q) return resultsSlots.forEach(s => s.classList.remove("filled"));
-  const target = `https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(q)}`;
-  const res = await fetchWithProxyText(target);
-  const suggestions = JSON.parse(res)?.[1] || [];
+document.addEventListener("DOMContentLoaded", setupTrigger);
+
+
+// ======= Suggestions =======
+async function fetchSuggestions(q){
+  if(!q) return [];
+  const target=`https://suggestqueries.google.com/complete/search?client=firefox&hl=${lang}&q=${encodeURIComponent(q)}`;
+  for(const proxy of proxies){
+    try{
+      const res=await fetch(proxy+encodeURIComponent(target),{cache:"no-store"});
+      if(!res||!res.ok) continue;
+      const txt=await res.text();
+      const parsed=JSON.parse(txt);
+      if(Array.isArray(parsed[1])) return parsed[1];
+    }catch{}
+  }
+  return [];
+}
+function clearSlots(){ selectedIndex=-1; resultsSlots.forEach(r=>{r.textContent=""; r.classList.remove("filled","active");}); }
+
+
+
+
+input.addEventListener("input",()=>{
+  const q=input.value.trim(); selectedIndex=-1; if(!q) return clearSlots();
+  if(debounceTimer) clearTimeout(debounceTimer);
+// Znajdź miejsce, gdzie wypełniasz sloty sugestiami i zamień na to:
+debounceTimer = setTimeout(async () => {
+  const suggestions = await fetchSuggestions(q);
   resultsSlots.forEach((slot, i) => {
     if (suggestions[i]) {
       slot.textContent = suggestions[i];
       slot.classList.add("filled");
+      
+      // Reset animacji, aby przy każdym nowym znaku pola "drgały"
+      slot.style.animation = 'none';
+      slot.offsetHeight; // Trigger reflow
+      slot.style.animation = `hyperPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) ${i * 0.04}s forwards`;
     } else {
-      slot.classList.remove("filled");
+      slot.textContent = "";
+      slot.classList.remove("filled", "active");
+      slot.style.animation = 'none';
     }
   });
-}, 200));
+}, 200);
+});
+
+input.addEventListener("keydown",(e)=>{
+  const filled=resultsSlots.filter(r=>r.classList.contains("filled"));
+  if(!filled.length && e.key!=="Enter") return;
+  if(["ArrowDown","ArrowUp","Enter"].includes(e.key)) e.preventDefault();
+  if(e.key==="ArrowDown") selectedIndex=(selectedIndex+1)%filled.length;
+  else if(e.key==="ArrowUp") selectedIndex=(selectedIndex-1+filled.length)%filled.length;
+  else if(e.key==="Enter"){
+    const q=selectedIndex>=0 && filled[selectedIndex]?filled[selectedIndex].textContent:input.value.trim();
+    if(!q) return;
+    showSearchResults(q,true);
+  }
+  filled.forEach((r,i)=>r.classList.toggle("active",i===selectedIndex));
+});
+
+resultsSlots.forEach(slot=>{
+  slot.addEventListener("click",()=>{
+    if(!slot.classList.contains("filled")) return;
+    showSearchResults(slot.textContent,true);
+  });
+});
 
 // Obsługa przycisków interfejsu
 btn?.addEventListener("click", () => {

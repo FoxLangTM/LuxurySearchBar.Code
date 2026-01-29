@@ -129,6 +129,7 @@ function buildCardHTML(r) {
     </div>`;
 }
 
+
 async function showSearchResults(query, reset=false) {
   if (!query || loading) return;
   currentQuery = query;
@@ -142,13 +143,13 @@ async function showSearchResults(query, reset=false) {
   }
   
   loading = true;
-  const results = await fetchResultsDDG(query, nextPage, 8);
+  const results = await fetchResultsDDG(query, nextPage, 18);
   
   results.filter(r => !shownLinks.has(r.link)).forEach((r, index) => {
     shownLinks.add(r.link);
     const card = document.createElement("div");
     card.className="results-res-card hyper-animate"; // Animacja wejścia
-    card.style.animationDelay = `${index * 0.05}s`;
+    card.style.animationDelay = `${index * 0.15}s`;
     card.innerHTML = buildCardHTML(r);
     grid.appendChild(card);
   });
@@ -170,7 +171,7 @@ async function showNextResults() {
       return;
     }
 
-    const results = await fetchResultsDDG(currentQuery, nextPage, 8);
+    const results = await fetchResultsDDG(currentQuery, nextPage, 6);
     const uniqueResults = results.filter((r) => !shownLinks.has(r.link));
 
     if (!uniqueResults.length) {
@@ -187,7 +188,7 @@ async function showNextResults() {
 uniqueResults.forEach((r, index) => {
   const card = document.createElement("div");
   card.className = "results-res-card hyper-animate"; // Dodaj klasę
-  card.style.animationDelay = `${index * 0.05}s`;   // Dodaj delay
+  card.style.animationDelay = `${index * 0.15}s`;   // Dodaj delay
   card.innerHTML = buildCardHTML(r);
   grid.appendChild(card);
 });
@@ -197,15 +198,12 @@ uniqueResults.forEach((r, index) => {
   }
 
 
-
-
-
 function setupTrigger() {
   const trigger = document.querySelector(".scroll-trigger");
   if (!trigger) return;
 
   let holdTimer = null;
-  const HOLD_TIME = 1000;
+  const HOLD_TIME = 1200;
 
 
 
